@@ -1,0 +1,21 @@
+# Maven build output
+target/
+*.class
+
+# Environment and secrets
+.env
+application.properties
+local-session.json
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# Local storage and recordings
+recordings/
+downloads/
+*.log
