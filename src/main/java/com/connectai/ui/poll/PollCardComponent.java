@@ -90,7 +90,7 @@ public class PollCardComponent extends JPanel {
                 // Progress percentage fill background
                 if (option.getPercentage() > 0) {
                     int fillWidth = (int) ((getWidth() * option.getPercentage()) / 100.0);
-                    g2.setColor(selected ? new Color(124, 92, 252, 60) : new Color(255, 255, 255, 15));
+                    g2.setColor(selected ? new Color(187, 239, 31, 60) : new Color(255, 255, 255, 15));
                     g2.fillRoundRect(0, 0, fillWidth, getHeight(), 8, 8);
                 }
 

@@ -86,15 +86,24 @@ public class ConversationListPanel extends JPanel {
         textPanel.add(nameLabel);
         textPanel.add(statusLabel);
 
+        JPanel actionPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 4, 0));
+        actionPanel.setOpaque(false);
+
         IconButton settingsBtn = new IconButton("⚙", "Settings");
         settingsBtn.addActionListener(e -> {
             Frame top = (Frame) SwingUtilities.getWindowAncestor(this);
             new com.connectai.ui.components.SettingsDialog(top).setVisible(true);
         });
 
+        IconButton logoutBtn = new IconButton("🚪", "Log Out");
+        logoutBtn.addActionListener(e -> performLogout());
+
+        actionPanel.add(settingsBtn);
+        actionPanel.add(logoutBtn);
+
         userRow.add(avatar, BorderLayout.WEST);
         userRow.add(textPanel, BorderLayout.CENTER);
-        userRow.add(settingsBtn, BorderLayout.EAST);
+        userRow.add(actionPanel, BorderLayout.EAST);
 
         // Search bar
         searchField = new RoundedTextField("Search conversations...");
@@ -184,6 +193,16 @@ public class ConversationListPanel extends JPanel {
                 filterList(searchField != null ? searchField.getText().trim() : "");
             });
         });
+    }
+
+    private void performLogout() {
+        com.connectai.realtime.SupabaseRealtimeClient.getInstance().disconnect();
+        AuthService.getInstance().logout();
+        Frame top = (Frame) SwingUtilities.getWindowAncestor(this);
+        if (top != null) {
+            top.dispose();
+        }
+        SwingUtilities.invokeLater(() -> new com.connectai.ui.auth.AuthFrame().setVisible(true));
     }
 
     private Conversation createDummyFromMember(ConversationMember cm) {

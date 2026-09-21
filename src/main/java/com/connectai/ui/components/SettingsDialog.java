@@ -64,8 +64,20 @@ public class SettingsDialog extends JDialog {
         JPanel footer = new JPanel(new BorderLayout());
         footer.setOpaque(false);
 
-        PremiumButton saveBtn = new PremiumButton("Save & Close", ThemeColors.PRIMARY_ACCENT, ThemeColors.PRIMARY_TEXT);
+        PremiumButton logoutBtn = new PremiumButton("Log Out", ThemeColors.ERROR, ThemeColors.PRIMARY_TEXT);
+        logoutBtn.addActionListener(e -> {
+            dispose();
+            com.connectai.realtime.SupabaseRealtimeClient.getInstance().disconnect();
+            AuthService.getInstance().logout();
+            if (owner != null) {
+                owner.dispose();
+            }
+            javax.swing.SwingUtilities.invokeLater(() -> new com.connectai.ui.auth.AuthFrame().setVisible(true));
+        });
+
+        PremiumButton saveBtn = new PremiumButton("Save & Close", ThemeColors.PRIMARY_ACCENT, ThemeColors.MAIN_BG);
         saveBtn.addActionListener(e -> dispose());
+        footer.add(logoutBtn, BorderLayout.WEST);
         footer.add(saveBtn, BorderLayout.EAST);
 
         mainPanel.add(title, BorderLayout.NORTH);
