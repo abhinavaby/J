@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: connectai-desktop
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: PORT
+        value: 6080
+      - key: RESOLUTION
+        value: 1600x900x24
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false

@@ -245,6 +245,29 @@ java -jar target/connectai-1.0.0.jar
 
 ---
 
+### Step 5: Running inside Docker (Web Browser / VNC)
+
+ConnectAI includes a complete Docker setup with **noVNC** so you can run the Java Swing desktop application inside a Docker container and view/interact with it directly in your web browser!
+
+#### Option A: Using Docker Compose (Recommended)
+```bash
+docker compose up --build
+```
+Then open your web browser to:
+👉 **[http://localhost:6080/vnc.html](http://localhost:6080/vnc.html)** (or `http://localhost:6080`)
+
+#### Option B: Using Docker CLI
+```bash
+# 1. Build the Docker image
+docker build -t connectai-app .
+
+# 2. Run the container
+docker run -d -p 6080:6080 -p 5900:5900 --name connectai_desktop connectai-app
+```
+Access the application UI in your browser at `http://localhost:6080/vnc.html`.
+
+---
+
 ## 3. Viva Technical Concepts Explanation
 
 ### 1. Java Object-Oriented Programming (OOP)

@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  connectai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: connectai_desktop
+    ports:
+      - "6080:6080" # noVNC Web Interface
+      - "5900:5900" # VNC Port
+    environment:
+      - RESOLUTION=1600x900x24
+      - SUPABASE_URL=${SUPABASE_URL:-}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    restart: unless-stopped
