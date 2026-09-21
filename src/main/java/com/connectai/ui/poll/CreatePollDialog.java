@@ -59,7 +59,8 @@ public class CreatePollDialog extends JDialog {
         addOptionRow();
         addOptionRow();
 
-        PremiumButton addOptBtn = new PremiumButton("+ Add Option", ThemeColors.ELEVATED_SURFACE, ThemeColors.SECONDARY_ACCENT);
+        PremiumButton addOptBtn = new PremiumButton("+ Add Option", ThemeColors.ELEVATED_SURFACE,
+                ThemeColors.SECONDARY_ACCENT);
         addOptBtn.setFont(ThemeFonts.BODY_SMALL);
         addOptBtn.addActionListener(e -> addOptionRow());
 
@@ -79,7 +80,12 @@ public class CreatePollDialog extends JDialog {
 
         body.add(questionField);
         body.add(javax.swing.Box.createVerticalStrut(14));
-        body.add(new JLabel("Poll Options:") {{ setFont(ThemeFonts.BODY_BOLD); setForeground(ThemeColors.SECONDARY_TEXT); }});
+        body.add(new JLabel("Poll Options:") {
+            {
+                setFont(ThemeFonts.BODY_BOLD);
+                setForeground(ThemeColors.SECONDARY_TEXT);
+            }
+        });
         body.add(javax.swing.Box.createVerticalStrut(8));
         body.add(optionsContainer);
         body.add(javax.swing.Box.createVerticalStrut(8));
@@ -100,7 +106,8 @@ public class CreatePollDialog extends JDialog {
         PremiumButton cancelBtn = new PremiumButton("Cancel", ThemeColors.ELEVATED_SURFACE, ThemeColors.PRIMARY_TEXT);
         cancelBtn.addActionListener(e -> dispose());
 
-        PremiumButton createBtn = new PremiumButton("Publish Poll", ThemeColors.PRIMARY_ACCENT, ThemeColors.PRIMARY_TEXT);
+        PremiumButton createBtn = new PremiumButton("Publish Poll", ThemeColors.PRIMARY_ACCENT,
+                ThemeColors.PRIMARY_TEXT);
         createBtn.addActionListener(e -> submit(createBtn));
 
         footer.add(cancelBtn, BorderLayout.WEST);
@@ -156,7 +163,8 @@ public class CreatePollDialog extends JDialog {
         List<String> options = new ArrayList<>();
         for (RoundedTextField field : optionFields) {
             String txt = field.getText().trim();
-            if (!txt.isBlank()) options.add(txt);
+            if (!txt.isBlank())
+                options.add(txt);
         }
 
         if (options.size() < 2) {
@@ -168,7 +176,8 @@ public class CreatePollDialog extends JDialog {
         new SwingWorker<Void, Void>() {
             @Override
             protected Void doInBackground() throws Exception {
-                PollService.getInstance().createPollMessage(conversationId, question, options, multipleCheck.isSelected(), anonymousCheck.isSelected()).get();
+                PollService.getInstance().createPollMessage(conversationId, question, options,
+                        multipleCheck.isSelected(), anonymousCheck.isSelected()).get();
                 return null;
             }
 
@@ -179,9 +188,11 @@ public class CreatePollDialog extends JDialog {
                     get();
                     ToastManager.showToast(CreatePollDialog.this, "Poll published!", ToastManager.ToastType.SUCCESS);
                     dispose();
-                    if (onSuccessCallback != null) onSuccessCallback.run();
+                    if (onSuccessCallback != null)
+                        onSuccessCallback.run();
                 } catch (Exception ex) {
-                    ToastManager.showToast(CreatePollDialog.this, "Failed to publish poll", ToastManager.ToastType.ERROR);
+                    ToastManager.showToast(CreatePollDialog.this, "Failed to publish poll",
+                            ToastManager.ToastType.ERROR);
                 }
             }
         }.execute();

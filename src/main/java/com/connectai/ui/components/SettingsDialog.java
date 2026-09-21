@@ -34,8 +34,12 @@ public class SettingsDialog extends JDialog {
         content.setOpaque(false);
 
         // Account section
-        String name = AuthService.getInstance().getCurrentProfile() != null ? AuthService.getInstance().getCurrentProfile().getEffectiveName() : "User";
-        String email = AuthService.getInstance().getCurrentUser() != null ? AuthService.getInstance().getCurrentUser().getEmail() : "N/A";
+        String name = AuthService.getInstance().getCurrentProfile() != null
+                ? AuthService.getInstance().getCurrentProfile().getEffectiveName()
+                : "User";
+        String email = AuthService.getInstance().getCurrentUser() != null
+                ? AuthService.getInstance().getCurrentUser().getEmail()
+                : "N/A";
 
         addInfoRow(content, "User Account", name + " (" + email + ")");
         addInfoRow(content, "Application Version", AppConfig.getAppName() + " v" + AppConfig.getAppVersion());

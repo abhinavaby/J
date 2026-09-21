@@ -72,12 +72,15 @@ public class AuthFrame extends JFrame {
         logo.setForeground(ThemeColors.PRIMARY_ACCENT);
         logo.setAlignmentX(CENTER_ALIGNMENT);
 
-        JLabel tagline = new JLabel("<html><center>AI-Powered Realtime Communication Platform</center></html>", SwingConstants.CENTER);
+        JLabel tagline = new JLabel("<html><center>AI-Powered Realtime Communication Platform</center></html>",
+                SwingConstants.CENTER);
         tagline.setFont(ThemeFonts.BODY_LARGE);
         tagline.setForeground(ThemeColors.SECONDARY_TEXT);
         tagline.setAlignmentX(CENTER_ALIGNMENT);
 
-        JLabel desc = new JLabel("<html><center>Connect instantly, summarize discussions, rephrase messages, and collaborate in realtime with modern AI intelligence.</center></html>", SwingConstants.CENTER);
+        JLabel desc = new JLabel(
+                "<html><center>Connect instantly, summarize discussions, rephrase messages, and collaborate in realtime with modern AI intelligence.</center></html>",
+                SwingConstants.CENTER);
         desc.setFont(ThemeFonts.BODY_MEDIUM);
         desc.setForeground(ThemeColors.MUTED_TEXT);
         desc.setAlignmentX(CENTER_ALIGNMENT);
@@ -139,7 +142,8 @@ public class AuthFrame extends JFrame {
         loginButton.setPreferredSize(new Dimension(368, 44));
         loginButton.addActionListener(e -> performLogin());
 
-        PremiumButton mockModeButton = new PremiumButton("⚡ Explore UI with Mock Data", ThemeColors.ELEVATED_SURFACE, ThemeColors.PRIMARY_TEXT);
+        PremiumButton mockModeButton = new PremiumButton("⚡ Explore UI with Mock Data", ThemeColors.ELEVATED_SURFACE,
+                ThemeColors.PRIMARY_TEXT);
         mockModeButton.setPreferredSize(new Dimension(368, 40));
         mockModeButton.setFont(ThemeFonts.BODY_BOLD);
         mockModeButton.addActionListener(e -> {
@@ -265,7 +269,8 @@ public class AuthFrame extends JFrame {
                     dispose();
                     SwingUtilities.invokeLater(() -> new MainChatFrame().setVisible(true));
                 } catch (Exception ex) {
-                    ToastManager.showToast(AuthFrame.this, "Login failed: " + ex.getCause().getMessage(), ToastManager.ToastType.ERROR);
+                    ToastManager.showToast(AuthFrame.this, "Login failed: " + ex.getCause().getMessage(),
+                            ToastManager.ToastType.ERROR);
                 }
             }
         }.execute();
@@ -301,11 +306,13 @@ public class AuthFrame extends JFrame {
                 registerButton.setEnabled(true);
                 try {
                     get();
-                    ToastManager.showToast(AuthFrame.this, "Account created successfully!", ToastManager.ToastType.SUCCESS);
+                    ToastManager.showToast(AuthFrame.this, "Account created successfully!",
+                            ToastManager.ToastType.SUCCESS);
                     dispose();
                     SwingUtilities.invokeLater(() -> new MainChatFrame().setVisible(true));
                 } catch (Exception ex) {
-                    ToastManager.showToast(AuthFrame.this, "Sign up failed: " + ex.getCause().getMessage(), ToastManager.ToastType.ERROR);
+                    ToastManager.showToast(AuthFrame.this, "Sign up failed: " + ex.getCause().getMessage(),
+                            ToastManager.ToastType.ERROR);
                 }
             }
         }.execute();

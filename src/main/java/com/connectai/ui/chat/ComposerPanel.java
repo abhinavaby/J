@@ -182,12 +182,14 @@ public class ComposerPanel extends JPanel {
 
     private void sendCurrentText() {
         String text = inputArea.getText().trim();
-        if (text.isBlank() || conversationId == null) return;
+        if (text.isBlank() || conversationId == null)
+            return;
 
         if (editTargetMessage != null) {
             ChatService.getInstance().editMessage(editTargetMessage.getId(), text);
             clearPreview();
-            if (onMessageSentCallback != null) onMessageSentCallback.run();
+            if (onMessageSentCallback != null)
+                onMessageSentCallback.run();
             return;
         }
 
@@ -204,13 +206,15 @@ public class ComposerPanel extends JPanel {
 
             @Override
             protected void done() {
-                if (onMessageSentCallback != null) onMessageSentCallback.run();
+                if (onMessageSentCallback != null)
+                    onMessageSentCallback.run();
             }
         }.execute();
     }
 
     private void selectAndAttachFile() {
-        if (conversationId == null) return;
+        if (conversationId == null)
+            return;
         JFileChooser chooser = new JFileChooser();
         int res = chooser.showOpenDialog(this);
         if (res == JFileChooser.APPROVE_OPTION) {
@@ -220,20 +224,23 @@ public class ComposerPanel extends JPanel {
                 ToastManager.showToast(this, "Uploading file...", ToastManager.ToastType.INFO);
                 AttachmentService.getInstance().uploadAndSendFile(conversationId, file, caption, null, 0)
                         .thenAccept(msg -> {
-                            if (onMessageSentCallback != null) onMessageSentCallback.run();
+                            if (onMessageSentCallback != null)
+                                onMessageSentCallback.run();
                         });
             }).setVisible(true);
         }
     }
 
     private void openPollDialog() {
-        if (conversationId == null) return;
+        if (conversationId == null)
+            return;
         Frame top = (Frame) SwingUtilities.getWindowAncestor(this);
         new CreatePollDialog(top, conversationId, onMessageSentCallback).setVisible(true);
     }
 
     private void startVoiceRecorder() {
-        if (conversationId == null) return;
+        if (conversationId == null)
+            return;
         removeAll();
 
         VoiceRecorderPanel voicePanel = new VoiceRecorderPanel(
@@ -243,10 +250,10 @@ public class ComposerPanel extends JPanel {
                     AudioService.getInstance().sendVoiceNote(conversationId, bytes, duration)
                             .thenAccept(msg -> {
                                 renderNormalComposer();
-                                if (onMessageSentCallback != null) onMessageSentCallback.run();
+                                if (onMessageSentCallback != null)
+                                    onMessageSentCallback.run();
                             });
-                }
-        );
+                });
 
         add(voicePanel, BorderLayout.CENTER);
         revalidate();
@@ -256,7 +263,8 @@ public class ComposerPanel extends JPanel {
     private void openAIRephrasePopup(IconButton triggerBtn) {
         String draft = inputArea.getText().trim();
         if (draft.isBlank()) {
-            ToastManager.showToast(this, "Type a draft message first to rephrase with AI", ToastManager.ToastType.WARNING);
+            ToastManager.showToast(this, "Type a draft message first to rephrase with AI",
+                    ToastManager.ToastType.WARNING);
             return;
         }
 

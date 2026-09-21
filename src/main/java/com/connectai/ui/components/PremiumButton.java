@@ -29,7 +29,7 @@ public class PremiumButton extends JButton {
         this.normalBg = bg;
         this.hoverBg = bg.brighter();
         this.pressedBg = bg.darker();
-        
+
         setFont(ThemeFonts.BODY_BOLD);
         setForeground(fg);
         setFocusPainted(false);

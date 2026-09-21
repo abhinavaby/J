@@ -34,7 +34,8 @@ public class MessageBubble extends JPanel {
     private Consumer<Message> onEditCallback;
     private Consumer<Message> onDeleteCallback;
 
-    public MessageBubble(Message message, boolean isOutgoing, Consumer<Message> onReplyCallback, Consumer<Message> onEditCallback, Consumer<Message> onDeleteCallback) {
+    public MessageBubble(Message message, boolean isOutgoing, Consumer<Message> onReplyCallback,
+            Consumer<Message> onEditCallback, Consumer<Message> onDeleteCallback) {
         this.message = message;
         this.isOutgoing = isOutgoing;
         this.onReplyCallback = onReplyCallback;
@@ -75,11 +76,13 @@ public class MessageBubble extends JPanel {
         // Message content body
         if (message.getMessageType() == MessageType.POLL && message.getPoll() != null) {
             bubbleCard.add(new PollCardComponent(message.getPoll()));
-        } else if ((message.getMessageType() == MessageType.AUDIO || message.getMessageType() == MessageType.VOICE) && message.getAttachment() != null) {
+        } else if ((message.getMessageType() == MessageType.AUDIO || message.getMessageType() == MessageType.VOICE)
+                && message.getAttachment() != null) {
             bubbleCard.add(new AudioPlayerComponent(message.getAttachment()));
         } else {
             String text = message.isDeleted() ? "<i>" + message.getContent() + "</i>" : message.getContent();
-            JLabel textLabel = new JLabel("<html><body style='width: 320px; color: #F8FAFC;'>" + text + "</body></html>");
+            JLabel textLabel = new JLabel(
+                    "<html><body style='width: 320px; color: #F8FAFC;'>" + text + "</body></html>");
             textLabel.setFont(ThemeFonts.BODY_MEDIUM);
             textLabel.setForeground(ThemeColors.PRIMARY_TEXT);
             bubbleCard.add(textLabel);
@@ -90,7 +93,8 @@ public class MessageBubble extends JPanel {
         footer.setOpaque(false);
 
         String time = message.getCreatedAt() != null && message.getCreatedAt().length() >= 16
-                ? message.getCreatedAt().substring(11, 16) : "Just now";
+                ? message.getCreatedAt().substring(11, 16)
+                : "Just now";
         JLabel timeLabel = new JLabel(time);
         timeLabel.setFont(ThemeFonts.CAPTION);
         timeLabel.setForeground(ThemeColors.MUTED_TEXT);
@@ -99,7 +103,8 @@ public class MessageBubble extends JPanel {
         if (isOutgoing) {
             JLabel statusIcon = new JLabel(getStatusCheckmark(message.getStatus()));
             statusIcon.setFont(ThemeFonts.CAPTION);
-            statusIcon.setForeground(message.getStatus() == MessageStatus.READ ? ThemeColors.SECONDARY_ACCENT : ThemeColors.MUTED_TEXT);
+            statusIcon.setForeground(
+                    message.getStatus() == MessageStatus.READ ? ThemeColors.SECONDARY_ACCENT : ThemeColors.MUTED_TEXT);
             footer.add(statusIcon);
         }
 
@@ -123,10 +128,14 @@ public class MessageBubble extends JPanel {
     }
 
     private String getStatusCheckmark(MessageStatus status) {
-        if (status == MessageStatus.SENDING) return "🕒";
-        if (status == MessageStatus.SENT) return "✓";
-        if (status == MessageStatus.DELIVERED) return "✓✓";
-        if (status == MessageStatus.READ) return "✓✓";
+        if (status == MessageStatus.SENDING)
+            return "🕒";
+        if (status == MessageStatus.SENT)
+            return "✓";
+        if (status == MessageStatus.DELIVERED)
+            return "✓✓";
+        if (status == MessageStatus.READ)
+            return "✓✓";
         return "✓";
     }
 
@@ -135,11 +144,15 @@ public class MessageBubble extends JPanel {
         menu.setBackground(ThemeColors.ELEVATED_SURFACE);
 
         JMenuItem replyItem = new JMenuItem("↩ Reply");
-        replyItem.addActionListener(e -> { if (onReplyCallback != null) onReplyCallback.accept(message); });
+        replyItem.addActionListener(e -> {
+            if (onReplyCallback != null)
+                onReplyCallback.accept(message);
+        });
 
         JMenuItem copyItem = new JMenuItem("📋 Copy");
         copyItem.addActionListener(e -> {
-            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(message.getContent()), null);
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(message.getContent()),
+                    null);
         });
 
         menu.add(replyItem);
@@ -147,10 +160,16 @@ public class MessageBubble extends JPanel {
 
         if (isOutgoing && !message.isDeleted()) {
             JMenuItem editItem = new JMenuItem("✏ Edit");
-            editItem.addActionListener(e -> { if (onEditCallback != null) onEditCallback.accept(message); });
+            editItem.addActionListener(e -> {
+                if (onEditCallback != null)
+                    onEditCallback.accept(message);
+            });
 
             JMenuItem deleteItem = new JMenuItem("🗑 Delete");
-            deleteItem.addActionListener(e -> { if (onDeleteCallback != null) onDeleteCallback.accept(message); });
+            deleteItem.addActionListener(e -> {
+                if (onDeleteCallback != null)
+                    onDeleteCallback.accept(message);
+            });
 
             menu.add(editItem);
             menu.add(deleteItem);

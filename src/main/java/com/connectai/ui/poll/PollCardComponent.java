@@ -33,7 +33,8 @@ public class PollCardComponent extends JPanel {
 
     private void renderPoll() {
         removeAll();
-        if (poll == null) return;
+        if (poll == null)
+            return;
 
         JPanel card = new RoundedPanel(12, ThemeColors.ELEVATED_SURFACE, ThemeColors.CARD_BORDER);
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
@@ -57,7 +58,8 @@ public class PollCardComponent extends JPanel {
         // Options
         if (poll.getOptions() != null) {
             for (PollOption opt : poll.getOptions()) {
-                boolean hasVotedThis = poll.getUserVotedOptionIds() != null && poll.getUserVotedOptionIds().contains(opt.getId());
+                boolean hasVotedThis = poll.getUserVotedOptionIds() != null
+                        && poll.getUserVotedOptionIds().contains(opt.getId());
                 JPanel optBar = createOptionBar(opt, hasVotedThis);
                 card.add(optBar);
                 card.add(javax.swing.Box.createVerticalStrut(6));

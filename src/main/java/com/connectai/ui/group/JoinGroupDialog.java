@@ -83,11 +83,14 @@ public class JoinGroupDialog extends JDialog {
                 btn.setEnabled(true);
                 try {
                     get();
-                    ToastManager.showToast(JoinGroupDialog.this, "Joined group successfully!", ToastManager.ToastType.SUCCESS);
+                    ToastManager.showToast(JoinGroupDialog.this, "Joined group successfully!",
+                            ToastManager.ToastType.SUCCESS);
                     dispose();
-                    if (onSuccessCallback != null) onSuccessCallback.run();
+                    if (onSuccessCallback != null)
+                        onSuccessCallback.run();
                 } catch (Exception ex) {
-                    ToastManager.showToast(JoinGroupDialog.this, "Failed to join group: " + ex.getCause().getMessage(), ToastManager.ToastType.ERROR);
+                    ToastManager.showToast(JoinGroupDialog.this, "Failed to join group: " + ex.getCause().getMessage(),
+                            ToastManager.ToastType.ERROR);
                 }
             }
         }.execute();

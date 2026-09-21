@@ -54,7 +54,8 @@ public class ForgotPasswordDialog extends JDialog {
         PremiumButton cancelBtn = new PremiumButton("Cancel", ThemeColors.ELEVATED_SURFACE, ThemeColors.PRIMARY_TEXT);
         cancelBtn.addActionListener(e -> dispose());
 
-        PremiumButton submitBtn = new PremiumButton("Send Reset Link", ThemeColors.PRIMARY_ACCENT, ThemeColors.PRIMARY_TEXT);
+        PremiumButton submitBtn = new PremiumButton("Send Reset Link", ThemeColors.PRIMARY_ACCENT,
+                ThemeColors.PRIMARY_TEXT);
         submitBtn.addActionListener(e -> sendReset(submitBtn));
 
         footer.add(cancelBtn, BorderLayout.WEST);
@@ -86,13 +87,16 @@ public class ForgotPasswordDialog extends JDialog {
                 btn.setEnabled(true);
                 try {
                     if (get()) {
-                        ToastManager.showToast(ForgotPasswordDialog.this, "Reset link sent! Check your inbox.", ToastManager.ToastType.SUCCESS);
+                        ToastManager.showToast(ForgotPasswordDialog.this, "Reset link sent! Check your inbox.",
+                                ToastManager.ToastType.SUCCESS);
                         dispose();
                     } else {
-                        ToastManager.showToast(ForgotPasswordDialog.this, "Failed to send reset link", ToastManager.ToastType.ERROR);
+                        ToastManager.showToast(ForgotPasswordDialog.this, "Failed to send reset link",
+                                ToastManager.ToastType.ERROR);
                     }
                 } catch (Exception ex) {
-                    ToastManager.showToast(ForgotPasswordDialog.this, "Error: " + ex.getMessage(), ToastManager.ToastType.ERROR);
+                    ToastManager.showToast(ForgotPasswordDialog.this, "Error: " + ex.getMessage(),
+                            ToastManager.ToastType.ERROR);
                 }
             }
         }.execute();

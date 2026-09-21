@@ -80,7 +80,8 @@ public class AvatarComponent extends JComponent {
     }
 
     private String getInitials(String name) {
-        if (name == null || name.isBlank()) return "CA";
+        if (name == null || name.isBlank())
+            return "CA";
         String[] parts = name.trim().split("\\s+");
         if (parts.length >= 2) {
             return (parts[0].substring(0, 1) + parts[1].substring(0, 1)).toUpperCase();

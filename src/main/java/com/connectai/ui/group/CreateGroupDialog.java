@@ -64,7 +64,8 @@ public class CreateGroupDialog extends JDialog {
         PremiumButton cancelBtn = new PremiumButton("Cancel", ThemeColors.ELEVATED_SURFACE, ThemeColors.PRIMARY_TEXT);
         cancelBtn.addActionListener(e -> dispose());
 
-        PremiumButton createBtn = new PremiumButton("Create Group", ThemeColors.PRIMARY_ACCENT, ThemeColors.PRIMARY_TEXT);
+        PremiumButton createBtn = new PremiumButton("Create Group", ThemeColors.PRIMARY_ACCENT,
+                ThemeColors.PRIMARY_TEXT);
         createBtn.addActionListener(e -> submit(createBtn));
 
         footer.add(cancelBtn, BorderLayout.WEST);
@@ -100,11 +101,14 @@ public class CreateGroupDialog extends JDialog {
                 btn.setEnabled(true);
                 try {
                     get();
-                    ToastManager.showToast(CreateGroupDialog.this, "Group created successfully!", ToastManager.ToastType.SUCCESS);
+                    ToastManager.showToast(CreateGroupDialog.this, "Group created successfully!",
+                            ToastManager.ToastType.SUCCESS);
                     dispose();
-                    if (onSuccessCallback != null) onSuccessCallback.run();
+                    if (onSuccessCallback != null)
+                        onSuccessCallback.run();
                 } catch (Exception ex) {
-                    ToastManager.showToast(CreateGroupDialog.this, "Failed to create group", ToastManager.ToastType.ERROR);
+                    ToastManager.showToast(CreateGroupDialog.this, "Failed to create group",
+                            ToastManager.ToastType.ERROR);
                 }
             }
         }.execute();

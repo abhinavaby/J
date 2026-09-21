@@ -147,7 +147,8 @@ public class ConversationListPanel extends JPanel {
             new CreateGroupDialog(top, this::refreshConversations).setVisible(true);
         });
 
-        PremiumButton joinGroupBtn = new PremiumButton("Join Code", ThemeColors.ELEVATED_SURFACE, ThemeColors.PRIMARY_TEXT);
+        PremiumButton joinGroupBtn = new PremiumButton("Join Code", ThemeColors.ELEVATED_SURFACE,
+                ThemeColors.PRIMARY_TEXT);
         joinGroupBtn.setFont(ThemeFonts.BODY_SMALL);
         joinGroupBtn.addActionListener(e -> {
             Frame top = (Frame) SwingUtilities.getWindowAncestor(this);
@@ -205,7 +206,8 @@ public class ConversationListPanel extends JPanel {
 
     private static class ConversationRenderer extends DefaultListCellRenderer {
         @Override
-        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+                boolean cellHasFocus) {
             Conversation c = (Conversation) value;
             JPanel panel = new RoundedPanel(8, isSelected ? ThemeColors.SELECTION_OVERLAY : ThemeColors.SIDEBAR_BG);
             panel.setLayout(new BorderLayout(12, 0));
@@ -217,7 +219,8 @@ public class ConversationListPanel extends JPanel {
             name.setFont(ThemeFonts.BODY_BOLD);
             name.setForeground(ThemeColors.PRIMARY_TEXT);
 
-            JLabel sub = new JLabel(c.getLatestMessage() != null ? c.getLatestMessage().getContent() : "Tap to open chat");
+            JLabel sub = new JLabel(
+                    c.getLatestMessage() != null ? c.getLatestMessage().getContent() : "Tap to open chat");
             sub.setFont(ThemeFonts.BODY_SMALL);
             sub.setForeground(ThemeColors.MUTED_TEXT);
 
