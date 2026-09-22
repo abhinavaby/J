@@ -65,7 +65,7 @@ public class CreateGroupDialog extends JDialog {
         cancelBtn.addActionListener(e -> dispose());
 
         PremiumButton createBtn = new PremiumButton("Create Group", ThemeColors.PRIMARY_ACCENT,
-                ThemeColors.PRIMARY_TEXT);
+                ThemeColors.ACCENT_TEXT);
         createBtn.addActionListener(e -> submit(createBtn));
 
         footer.add(cancelBtn, BorderLayout.WEST);

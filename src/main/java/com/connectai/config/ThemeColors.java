@@ -24,6 +24,7 @@ public class ThemeColors {
     public static final Color PRIMARY_TEXT   = Color.decode("#EFF8FF"); // soft brilliant white
     public static final Color SECONDARY_TEXT = Color.decode("#94A3B8"); // muted cyan-grey
     public static final Color MUTED_TEXT     = Color.decode("#556677"); // dim grey
+    public static final Color ACCENT_TEXT    = Color.decode("#090A0F"); // dark text on yellow/lime accent background
 
     // Status & Semantic
     public static final Color SUCCESS_ONLINE = Color.decode("#BBEF1F"); // neon lime green

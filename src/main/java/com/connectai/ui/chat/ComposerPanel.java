@@ -130,7 +130,7 @@ public class ComposerPanel extends JPanel {
         IconButton micBtn = new IconButton("🎙", "Record Voice Note");
         micBtn.addActionListener(e -> startVoiceRecorder());
 
-        PremiumButton sendBtn = new PremiumButton("Send", ThemeColors.PRIMARY_ACCENT, Color.WHITE);
+        PremiumButton sendBtn = new PremiumButton("Send", ThemeColors.PRIMARY_ACCENT, ThemeColors.ACCENT_TEXT);
         sendBtn.setPreferredSize(new Dimension(68, 36));
         sendBtn.addActionListener(e -> sendCurrentText());
 

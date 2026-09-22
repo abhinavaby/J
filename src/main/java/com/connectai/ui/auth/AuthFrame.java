@@ -138,7 +138,7 @@ public class AuthFrame extends JFrame {
             }
         });
 
-        loginButton = new PremiumButton("Log In", ThemeColors.PRIMARY_ACCENT, Color.WHITE);
+        loginButton = new PremiumButton("Log In", ThemeColors.PRIMARY_ACCENT, ThemeColors.ACCENT_TEXT);
         loginButton.setPreferredSize(new Dimension(368, 44));
         loginButton.addActionListener(e -> performLogin());
 
@@ -206,7 +206,7 @@ public class AuthFrame extends JFrame {
         regPasswordField = new PasswordFieldWithToggle("Password");
         regConfirmPasswordField = new PasswordFieldWithToggle("Confirm Password");
 
-        registerButton = new PremiumButton("Create Account", ThemeColors.PRIMARY_ACCENT, Color.WHITE);
+        registerButton = new PremiumButton("Create Account", ThemeColors.PRIMARY_ACCENT, ThemeColors.ACCENT_TEXT);
         registerButton.setPreferredSize(new Dimension(368, 44));
         registerButton.addActionListener(e -> performRegistration());
 

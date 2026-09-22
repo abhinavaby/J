@@ -47,7 +47,7 @@ public class VoiceRecorderPanel extends JPanel {
         IconButton cancelBtn = new IconButton("✕", "Cancel recording");
         cancelBtn.addActionListener(e -> cancel());
 
-        PremiumButton stopSendBtn = new PremiumButton("Send Voice Note", ThemeColors.PRIMARY_ACCENT, ThemeColors.PRIMARY_TEXT);
+        PremiumButton stopSendBtn = new PremiumButton("Send Voice Note", ThemeColors.PRIMARY_ACCENT, ThemeColors.ACCENT_TEXT);
         stopSendBtn.setFont(ThemeFonts.BODY_SMALL);
         stopSendBtn.addActionListener(e -> stopAndSend());
 

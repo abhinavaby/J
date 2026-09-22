@@ -21,7 +21,7 @@ public class PremiumButton extends JButton {
     private int cornerRadius = ThemeDimensions.CORNER_RADIUS;
 
     public PremiumButton(String text) {
-        this(text, ThemeColors.PRIMARY_ACCENT, Color.WHITE);
+        this(text, ThemeColors.PRIMARY_ACCENT, ThemeColors.ACCENT_TEXT);
     }
 
     public PremiumButton(String text, Color bg, Color fg) {

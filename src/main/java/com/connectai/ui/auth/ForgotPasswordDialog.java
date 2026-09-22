@@ -55,7 +55,7 @@ public class ForgotPasswordDialog extends JDialog {
         cancelBtn.addActionListener(e -> dispose());
 
         PremiumButton submitBtn = new PremiumButton("Send Reset Link", ThemeColors.PRIMARY_ACCENT,
-                ThemeColors.PRIMARY_TEXT);
+                ThemeColors.ACCENT_TEXT);
         submitBtn.addActionListener(e -> sendReset(submitBtn));
 
         footer.add(cancelBtn, BorderLayout.WEST);

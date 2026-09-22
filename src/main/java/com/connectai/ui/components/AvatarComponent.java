@@ -55,7 +55,7 @@ public class AvatarComponent extends JComponent {
             g2.setColor(ThemeColors.PRIMARY_ACCENT);
             g2.fillOval(0, 0, size, size);
 
-            g2.setColor(Color.WHITE);
+            g2.setColor(ThemeColors.ACCENT_TEXT);
             g2.setFont(ThemeFonts.TITLE_SMALL);
             String initials = getInitials(displayName);
             int textX = (size - g2.getFontMetrics().stringWidth(initials)) / 2;

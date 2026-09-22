@@ -50,7 +50,7 @@ public class JoinGroupDialog extends JDialog {
         PremiumButton cancelBtn = new PremiumButton("Cancel", ThemeColors.ELEVATED_SURFACE, ThemeColors.PRIMARY_TEXT);
         cancelBtn.addActionListener(e -> dispose());
 
-        PremiumButton joinBtn = new PremiumButton("Join Group", ThemeColors.PRIMARY_ACCENT, ThemeColors.PRIMARY_TEXT);
+        PremiumButton joinBtn = new PremiumButton("Join Group", ThemeColors.PRIMARY_ACCENT, ThemeColors.ACCENT_TEXT);
         joinBtn.addActionListener(e -> submit(joinBtn));
 
         footer.add(cancelBtn, BorderLayout.WEST);

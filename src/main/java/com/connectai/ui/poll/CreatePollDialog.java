@@ -107,7 +107,7 @@ public class CreatePollDialog extends JDialog {
         cancelBtn.addActionListener(e -> dispose());
 
         PremiumButton createBtn = new PremiumButton("Publish Poll", ThemeColors.PRIMARY_ACCENT,
-                ThemeColors.PRIMARY_TEXT);
+                ThemeColors.ACCENT_TEXT);
         createBtn.addActionListener(e -> submit(createBtn));
 
         footer.add(cancelBtn, BorderLayout.WEST);

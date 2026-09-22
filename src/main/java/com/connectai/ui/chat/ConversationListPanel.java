@@ -149,7 +149,7 @@ public class ConversationListPanel extends JPanel {
         footer.setOpaque(false);
         footer.setBorder(BorderFactory.createEmptyBorder(12, 16, 16, 16));
 
-        PremiumButton newGroupBtn = new PremiumButton("+ Group", ThemeColors.PRIMARY_ACCENT, Color.WHITE);
+        PremiumButton newGroupBtn = new PremiumButton("+ Group", ThemeColors.PRIMARY_ACCENT, ThemeColors.ACCENT_TEXT);
         newGroupBtn.setFont(ThemeFonts.BODY_SMALL);
         newGroupBtn.addActionListener(e -> {
             Frame top = (Frame) SwingUtilities.getWindowAncestor(this);

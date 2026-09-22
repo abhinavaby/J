@@ -79,7 +79,7 @@ public class AttachmentPreviewDialog extends JDialog {
         PremiumButton cancelBtn = new PremiumButton("Cancel", ThemeColors.ELEVATED_SURFACE, ThemeColors.PRIMARY_TEXT);
         cancelBtn.addActionListener(e -> dispose());
 
-        PremiumButton sendBtn = new PremiumButton("Send File", ThemeColors.PRIMARY_ACCENT, ThemeColors.PRIMARY_TEXT);
+        PremiumButton sendBtn = new PremiumButton("Send File", ThemeColors.PRIMARY_ACCENT, ThemeColors.ACCENT_TEXT);
         sendBtn.addActionListener(e -> {
             dispose();
             if (onSendCallback != null) {
