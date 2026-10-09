@@ -13,9 +13,9 @@ import javax.swing.UIManager;
  */
 public class Main {
     public static void main(String[] args) {
-        // Initialize FlatLaf Dark Look and Feel with custom palette properties
+        // Initialize FlatLaf Light Look and Feel matching clean modern aesthetic
         try {
-            FlatDarkLaf.setup();
+            com.formdev.flatlaf.FlatLightLaf.setup();
             UIManager.put("Component.accentColor", ThemeColors.PRIMARY_ACCENT);
             UIManager.put("Panel.background", ThemeColors.MAIN_BG);
             UIManager.put("TextComponent.arc", 12);

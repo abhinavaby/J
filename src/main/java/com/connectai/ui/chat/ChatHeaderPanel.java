@@ -5,22 +5,28 @@ import com.connectai.config.ThemeFonts;
 import com.connectai.model.Conversation;
 import com.connectai.model.ConversationType;
 import com.connectai.service.AIService;
-import com.connectai.service.ChatService;
 import com.connectai.ui.components.AISummaryDialog;
 import com.connectai.ui.components.AvatarComponent;
 import com.connectai.ui.components.IconButton;
-import com.connectai.ui.components.PremiumButton;
+import com.connectai.ui.components.RoundedPanel;
 import com.connectai.ui.components.ToastManager;
-
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Frame;
-
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
+/**
+ * Clean and uncluttered chat header panel.
+ */
 public class ChatHeaderPanel extends JPanel {
     private Conversation conversation;
     private AvatarComponent avatar;
@@ -30,54 +36,95 @@ public class ChatHeaderPanel extends JPanel {
 
     public ChatHeaderPanel(Runnable onToggleRightPanel) {
         this.onToggleRightPanel = onToggleRightPanel;
-        setLayout(new BorderLayout(12, 0));
+        setLayout(new BorderLayout(14, 0));
         setBackground(ThemeColors.MESSAGE_AREA);
+        setPreferredSize(new Dimension(600, 58));
         setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 1, 0, ThemeColors.DIVIDER),
-                BorderFactory.createEmptyBorder(12, 20, 12, 20)
+                BorderFactory.createEmptyBorder(8, 18, 8, 16)
         ));
 
-        avatar = new AvatarComponent(42, "ConnectAI", true);
+        // Left section: Avatar + Title + Status
+        JPanel leftGroup = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        leftGroup.setOpaque(false);
 
-        titleLabel = new JLabel("Select a conversation");
-        titleLabel.setFont(ThemeFonts.TITLE_MEDIUM);
+        avatar = new AvatarComponent(40, "ConnectAI Assistant 🤖", true);
+
+        JPanel textPanel = new JPanel();
+        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
+        textPanel.setOpaque(false);
+
+        titleLabel = new JLabel("Tech & AI Product Team");
+        titleLabel.setFont(ThemeFonts.TITLE_SMALL);
         titleLabel.setForeground(ThemeColors.PRIMARY_TEXT);
 
-        subTitleLabel = new JLabel("Online");
+        subTitleLabel = new JLabel("Group Conversation • 6 members");
         subTitleLabel.setFont(ThemeFonts.CAPTION);
         subTitleLabel.setForeground(ThemeColors.MUTED_TEXT);
 
-        JPanel textPanel = new JPanel();
-        textPanel.setLayout(new javax.swing.BoxLayout(textPanel, javax.swing.BoxLayout.Y_AXIS));
-        textPanel.setOpaque(false);
         textPanel.add(titleLabel);
+        textPanel.add(Box.createVerticalStrut(2));
         textPanel.add(subTitleLabel);
 
-        JPanel actions = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 8, 0));
+        leftGroup.add(avatar);
+        leftGroup.add(textPanel);
+
+        // Right actions: ✨ Catch Me Up, ℹ Details
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 2));
         actions.setOpaque(false);
 
-        PremiumButton catchMeUpBtn = new PremiumButton("✨ Catch Me Up", ThemeColors.ELEVATED_SURFACE, ThemeColors.PRIMARY_ACCENT);
-        catchMeUpBtn.setFont(ThemeFonts.BODY_SMALL);
-        catchMeUpBtn.addActionListener(e -> triggerCatchMeUp());
+        // Pill Button: ✨ Catch Me Up
+        JPanel catchMeUpPill = new RoundedPanel(14, Color.decode("#EFF6FF"), Color.decode("#BFDBFE"));
+        catchMeUpPill.setLayout(new FlowLayout(FlowLayout.CENTER, 6, 4));
+        catchMeUpPill.setPreferredSize(new Dimension(126, 30));
+        catchMeUpPill.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        JLabel sparkleIcon = new JLabel("✨");
+        sparkleIcon.setFont(ThemeFonts.BODY_SMALL);
+        sparkleIcon.setForeground(ThemeColors.SPARKLE_GOLD);
+
+        JLabel catchText = new JLabel("Catch Me Up");
+        catchText.setFont(ThemeFonts.BODY_BOLD);
+        catchText.setForeground(ThemeColors.PRIMARY_ACCENT);
+
+        catchMeUpPill.add(sparkleIcon);
+        catchMeUpPill.add(catchText);
+
+        catchMeUpPill.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                triggerCatchMeUp();
+            }
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                catchMeUpPill.setBackground(Color.decode("#DBEAFE"));
+                catchMeUpPill.repaint();
+            }
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                catchMeUpPill.setBackground(Color.decode("#EFF6FF"));
+                catchMeUpPill.repaint();
+            }
+        });
 
         IconButton infoBtn = new IconButton("ℹ", "Conversation Details");
+        infoBtn.setPreferredSize(new Dimension(30, 30));
         infoBtn.addActionListener(e -> {
             if (onToggleRightPanel != null) onToggleRightPanel.run();
         });
 
-        actions.add(catchMeUpBtn);
+        actions.add(catchMeUpPill);
         actions.add(infoBtn);
 
-        add(avatar, BorderLayout.WEST);
-        add(textPanel, BorderLayout.CENTER);
+        add(leftGroup, BorderLayout.WEST);
         add(actions, BorderLayout.EAST);
     }
 
     public void setConversation(Conversation conv) {
         this.conversation = conv;
         if (conv == null) {
-            titleLabel.setText("Select a conversation");
-            subTitleLabel.setText("");
+            titleLabel.setText("ConnectAI Assistant 🤖");
+            subTitleLabel.setText("● Online");
             return;
         }
 
@@ -85,14 +132,19 @@ public class ChatHeaderPanel extends JPanel {
         titleLabel.setText(conv.getDisplayTitle());
 
         if (conv.getType() == ConversationType.GROUP) {
-            subTitleLabel.setText("Group Conversation");
+            int count = conv.getMembers() != null ? conv.getMembers().size() : 6;
+            subTitleLabel.setText("Group Conversation • " + count + " members");
         } else {
-            subTitleLabel.setText("Direct Message");
+            subTitleLabel.setText("● Online");
+            subTitleLabel.setForeground(ThemeColors.SUCCESS_ONLINE);
         }
     }
 
     private void triggerCatchMeUp() {
-        if (conversation == null) return;
+        if (conversation == null) {
+            ToastManager.showToast(this, "Select a conversation to summarize", ToastManager.ToastType.WARNING);
+            return;
+        }
 
         Frame top = (Frame) SwingUtilities.getWindowAncestor(this);
         ToastManager.showToast(this, "Generating AI summary...", ToastManager.ToastType.INFO);
@@ -100,17 +152,17 @@ public class ChatHeaderPanel extends JPanel {
         new SwingWorker<com.connectai.model.AISummaryResponse, Void>() {
             @Override
             protected com.connectai.model.AISummaryResponse doInBackground() throws Exception {
-                var msgs = ChatService.getInstance().loadMessages(conversation.getId(), 50, 0).get();
-                return AIService.getInstance().summarizeConversation(conversation.getId(), msgs).get();
+                return AIService.getInstance().summarizeConversation(conversation.getId()).get();
             }
 
             @Override
             protected void done() {
                 try {
-                    var summary = get();
-                    new AISummaryDialog(top, summary).setVisible(true);
+                    com.connectai.model.AISummaryResponse res = get();
+                    new AISummaryDialog(top, res).setVisible(true);
                 } catch (Exception ex) {
-                    ToastManager.showToast(ChatHeaderPanel.this, "Failed to generate AI summary", ToastManager.ToastType.ERROR);
+                    ToastManager.showToast(ChatHeaderPanel.this, "Summary failed: " + ex.getMessage(),
+                            ToastManager.ToastType.ERROR);
                 }
             }
         }.execute();

@@ -20,6 +20,10 @@ public class AIService {
         return instance;
     }
 
+    public CompletableFuture<AISummaryResponse> summarizeConversation(String conversationId) {
+        return summarizeConversation(conversationId, List.of());
+    }
+
     public CompletableFuture<AISummaryResponse> summarizeConversation(String conversationId, List<Message> messages) {
         if (com.connectai.config.AppConfig.isMockMode()) {
             return CompletableFuture.completedFuture(com.connectai.mock.MockDataProvider.getInstance().summarize(conversationId));

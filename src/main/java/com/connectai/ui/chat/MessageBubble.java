@@ -3,30 +3,34 @@ package com.connectai.ui.chat;
 import com.connectai.config.ThemeColors;
 import com.connectai.config.ThemeFonts;
 import com.connectai.model.Message;
-import com.connectai.model.MessageStatus;
+import com.connectai.model.MessageReaction;
 import com.connectai.model.MessageType;
-
+import com.connectai.ui.components.AvatarComponent;
 import com.connectai.ui.components.RoundedPanel;
+import com.connectai.ui.components.ToastManager;
 import com.connectai.ui.media.AudioPlayerComponent;
-
 import com.connectai.ui.poll.PollCardComponent;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
-
 import java.util.function.Consumer;
-
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 
+/**
+ * Clean, modern, uncluttered message bubble component.
+ */
 public class MessageBubble extends JPanel {
     private Message message;
     private boolean isOutgoing;
@@ -35,7 +39,7 @@ public class MessageBubble extends JPanel {
     private Consumer<Message> onDeleteCallback;
 
     public MessageBubble(Message message, boolean isOutgoing, Consumer<Message> onReplyCallback,
-            Consumer<Message> onEditCallback, Consumer<Message> onDeleteCallback) {
+                         Consumer<Message> onEditCallback, Consumer<Message> onDeleteCallback) {
         this.message = message;
         this.isOutgoing = isOutgoing;
         this.onReplyCallback = onReplyCallback;
@@ -44,137 +48,211 @@ public class MessageBubble extends JPanel {
 
         setLayout(new BorderLayout());
         setOpaque(false);
-        setBorder(BorderFactory.createEmptyBorder(4, 16, 4, 16));
+        setBorder(BorderFactory.createEmptyBorder(4, 18, 4, 18));
 
-        Color bg = isOutgoing ? ThemeColors.OUTGOING_BUBBLE : ThemeColors.INCOMING_BUBBLE;
-        JPanel bubbleCard = new RoundedPanel(14, bg);
-        bubbleCard.setLayout(new BoxLayout(bubbleCard, BoxLayout.Y_AXIS));
-        bubbleCard.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
+        String senderName = message.getSenderProfile() != null
+                ? message.getSenderProfile().getEffectiveName()
+                : (isOutgoing ? "Alex Rivera" : "ConnectAI Assistant 🤖");
 
-        // Sender name for incoming group messages
-        if (!isOutgoing && message.getSenderProfile() != null) {
-            JLabel senderLabel = new JLabel(message.getSenderProfile().getEffectiveName());
-            senderLabel.setFont(ThemeFonts.BODY_BOLD);
-            senderLabel.setForeground(ThemeColors.SECONDARY_ACCENT);
-            bubbleCard.add(senderLabel);
-            bubbleCard.add(javax.swing.Box.createVerticalStrut(4));
-        }
+        String timeStr = formatTime(message.getCreatedAt());
 
-        // Reply preview if present
-        if (message.getReplyMessage() != null) {
-            JPanel replyPanel = new RoundedPanel(6, new Color(0, 0, 0, 40));
-            replyPanel.setLayout(new BorderLayout());
-            replyPanel.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
-            JLabel rText = new JLabel("↩ " + message.getReplyMessage().getContent());
-            rText.setFont(ThemeFonts.BODY_SMALL);
-            rText.setForeground(ThemeColors.SECONDARY_TEXT);
-            replyPanel.add(rText, BorderLayout.CENTER);
-            bubbleCard.add(replyPanel);
-            bubbleCard.add(javax.swing.Box.createVerticalStrut(6));
-        }
-
-        // Message content body
-        if (message.getMessageType() == MessageType.POLL && message.getPoll() != null) {
-            bubbleCard.add(new PollCardComponent(message.getPoll()));
-        } else if ((message.getMessageType() == MessageType.AUDIO || message.getMessageType() == MessageType.VOICE)
-                && message.getAttachment() != null) {
-            bubbleCard.add(new AudioPlayerComponent(message.getAttachment()));
+        if (isOutgoing) {
+            renderOutgoing(senderName, timeStr);
         } else {
-            String text = message.isDeleted() ? "<i>" + message.getContent() + "</i>" : message.getContent();
-            JLabel textLabel = new JLabel(
-                    "<html><body style='width: 320px; color: #F8FAFC;'>" + text + "</body></html>");
-            textLabel.setFont(ThemeFonts.BODY_MEDIUM);
-            textLabel.setForeground(ThemeColors.PRIMARY_TEXT);
-            bubbleCard.add(textLabel);
+            renderIncoming(senderName, timeStr);
         }
+    }
 
-        // Footer timestamp & status indicators
-        JPanel footer = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 4, 0));
-        footer.setOpaque(false);
+    private void renderIncoming(String senderName, String timeStr) {
+        JPanel wrapper = new JPanel(new BorderLayout(10, 0));
+        wrapper.setOpaque(false);
 
-        String time = message.getCreatedAt() != null && message.getCreatedAt().length() >= 16
-                ? message.getCreatedAt().substring(11, 16)
-                : "Just now";
-        JLabel timeLabel = new JLabel(time);
+        // 1. Avatar (Top-aligned)
+        JPanel avatarBox = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        avatarBox.setOpaque(false);
+        AvatarComponent avatar = new AvatarComponent(34, senderName, false);
+        avatarBox.add(avatar);
+        wrapper.add(avatarBox, BorderLayout.WEST);
+
+        // 2. Bubble Body & Reactions Column
+        JPanel bubbleCol = new JPanel();
+        bubbleCol.setLayout(new BoxLayout(bubbleCol, BoxLayout.Y_AXIS));
+        bubbleCol.setOpaque(false);
+        bubbleCol.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // Bubble card
+        JPanel card = new RoundedPanel(14, ThemeColors.INCOMING_BUBBLE, ThemeColors.CARD_BORDER);
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setBorder(BorderFactory.createEmptyBorder(8, 14, 10, 14));
+        card.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // Header: Sender Name + Timestamp
+        JPanel header = new JPanel();
+        header.setLayout(new BoxLayout(header, BoxLayout.X_AXIS));
+        header.setOpaque(false);
+        header.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JLabel nameLabel = new JLabel(senderName);
+        nameLabel.setFont(ThemeFonts.BODY_BOLD);
+        nameLabel.setForeground(ThemeColors.PRIMARY_ACCENT);
+
+        JLabel timeLabel = new JLabel("  " + timeStr);
         timeLabel.setFont(ThemeFonts.CAPTION);
         timeLabel.setForeground(ThemeColors.MUTED_TEXT);
-        footer.add(timeLabel);
 
-        if (isOutgoing) {
-            JLabel statusIcon = new JLabel(getStatusCheckmark(message.getStatus()));
-            statusIcon.setFont(ThemeFonts.CAPTION);
-            statusIcon.setForeground(
-                    message.getStatus() == MessageStatus.READ ? ThemeColors.SECONDARY_ACCENT : ThemeColors.MUTED_TEXT);
-            footer.add(statusIcon);
+        header.add(nameLabel);
+        header.add(timeLabel);
+        header.add(Box.createHorizontalGlue());
+
+        card.add(header);
+        card.add(Box.createVerticalStrut(4));
+
+        // Content
+        addContent(card, false);
+
+        bubbleCol.add(card);
+
+        // Only show reaction bar if message actually has reactions (avoids visual clutter!)
+        if (message.getReactions() != null && !message.getReactions().isEmpty()) {
+            bubbleCol.add(Box.createVerticalStrut(4));
+            bubbleCol.add(createExistingReactionsBar());
         }
 
-        bubbleCard.add(javax.swing.Box.createVerticalStrut(4));
-        bubbleCard.add(footer);
+        wrapper.add(bubbleCol, BorderLayout.CENTER);
+        add(wrapper, BorderLayout.WEST);
 
-        // Position bubble left or right
-        JPanel alignContainer = new JPanel(new BorderLayout());
-        alignContainer.setOpaque(false);
-        if (isOutgoing) {
-            alignContainer.add(bubbleCard, BorderLayout.EAST);
+        setupContextMenu(card);
+    }
+
+    private void renderOutgoing(String senderName, String timeStr) {
+        JPanel wrapper = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        wrapper.setOpaque(false);
+
+        JPanel card = new RoundedPanel(14, ThemeColors.OUTGOING_BUBBLE);
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
+        card.setBorder(BorderFactory.createEmptyBorder(8, 14, 8, 14));
+        card.setAlignmentX(Component.RIGHT_ALIGNMENT);
+
+        // Content
+        addContent(card, true);
+
+        // Timestamp & checkmarks
+        JLabel footerLabel = new JLabel(timeStr + " ✓✓");
+        footerLabel.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        footerLabel.setForeground(new Color(255, 255, 255, 180));
+        footerLabel.setAlignmentX(Component.RIGHT_ALIGNMENT);
+
+        card.add(Box.createVerticalStrut(4));
+        card.add(footerLabel);
+
+        wrapper.add(card);
+        add(wrapper, BorderLayout.EAST);
+
+        setupContextMenu(card);
+    }
+
+    private void addContent(JPanel container, boolean isOutgoingMsg) {
+        if (message.getMessageType() == MessageType.POLL && message.getPoll() != null) {
+            JPanel p = new PollCardComponent(message.getPoll());
+            p.setAlignmentX(Component.LEFT_ALIGNMENT);
+            container.add(p);
+        } else if ((message.getMessageType() == MessageType.AUDIO || message.getMessageType() == MessageType.VOICE)
+                && message.getAttachment() != null) {
+            JPanel a = new AudioPlayerComponent(message.getAttachment());
+            a.setAlignmentX(Component.LEFT_ALIGNMENT);
+            container.add(a);
         } else {
-            alignContainer.add(bubbleCard, BorderLayout.WEST);
+            String raw = message.getContent() != null ? message.getContent() : "";
+            String formatted = raw.replaceAll("\\*\\*(.*?)\\*\\*", "<b>$1</b>")
+                    .replaceAll("\\n", "<br/>");
+
+            String textColor = isOutgoingMsg ? "#FFFFFF" : "#0F172A";
+            JLabel label = new JLabel("<html><body style='width: 380px; color: " + textColor + "; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif; font-size: 13px; line-height: 1.4;'>" + formatted + "</body></html>");
+            label.setAlignmentX(Component.LEFT_ALIGNMENT);
+            container.add(label);
         }
-
-        // Context Menu
-        JPopupMenu popup = createContextMenu();
-        bubbleCard.setComponentPopupMenu(popup);
-
-        add(alignContainer, BorderLayout.CENTER);
     }
 
-    private String getStatusCheckmark(MessageStatus status) {
-        if (status == MessageStatus.SENDING)
-            return "🕒";
-        if (status == MessageStatus.SENT)
-            return "✓";
-        if (status == MessageStatus.DELIVERED)
-            return "✓✓";
-        if (status == MessageStatus.READ)
-            return "✓✓";
-        return "✓";
+    private JPanel createExistingReactionsBar() {
+        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        bar.setOpaque(false);
+        bar.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        for (MessageReaction rx : message.getReactions()) {
+            JPanel pill = new RoundedPanel(12, Color.WHITE, ThemeColors.CARD_BORDER);
+            pill.setLayout(new FlowLayout(FlowLayout.CENTER, 4, 2));
+            JLabel el = new JLabel(rx.getEmoji());
+            el.setFont(ThemeFonts.CAPTION);
+            el.setForeground(ThemeColors.SECONDARY_TEXT);
+            pill.add(el);
+            bar.add(pill);
+        }
+        return bar;
     }
 
-    private JPopupMenu createContextMenu() {
+    private void setupContextMenu(JPanel target) {
         JPopupMenu menu = new JPopupMenu();
-        menu.setBackground(ThemeColors.ELEVATED_SURFACE);
 
-        JMenuItem replyItem = new JMenuItem("↩ Reply");
-        replyItem.addActionListener(e -> {
-            if (onReplyCallback != null)
-                onReplyCallback.accept(message);
+        JMenuItem copy = new JMenuItem("📋 Copy Text");
+        copy.addActionListener(e -> {
+            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(message.getContent()), null);
+            ToastManager.showToast(this, "Copied to clipboard", ToastManager.ToastType.SUCCESS);
         });
 
-        JMenuItem copyItem = new JMenuItem("📋 Copy");
-        copyItem.addActionListener(e -> {
-            Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(message.getContent()),
-                    null);
+        JMenuItem reply = new JMenuItem("↩ Reply");
+        reply.addActionListener(e -> {
+            if (onReplyCallback != null) onReplyCallback.accept(message);
         });
 
-        menu.add(replyItem);
-        menu.add(copyItem);
+        JMenuItem reactHeart = new JMenuItem("❤️ React Heart");
+        reactHeart.addActionListener(e -> ToastManager.showToast(this, "Reacted ❤️", ToastManager.ToastType.SUCCESS));
 
-        if (isOutgoing && !message.isDeleted()) {
-            JMenuItem editItem = new JMenuItem("✏ Edit");
-            editItem.addActionListener(e -> {
-                if (onEditCallback != null)
-                    onEditCallback.accept(message);
+        JMenuItem reactThumbs = new JMenuItem("👍 React Thumbs Up");
+        reactThumbs.addActionListener(e -> ToastManager.showToast(this, "Reacted 👍", ToastManager.ToastType.SUCCESS));
+
+        menu.add(copy);
+        menu.add(reply);
+        menu.addSeparator();
+        menu.add(reactHeart);
+        menu.add(reactThumbs);
+
+        if (isOutgoing) {
+            JMenuItem edit = new JMenuItem("✏ Edit");
+            edit.addActionListener(e -> {
+                if (onEditCallback != null) onEditCallback.accept(message);
             });
-
-            JMenuItem deleteItem = new JMenuItem("🗑 Delete");
-            deleteItem.addActionListener(e -> {
-                if (onDeleteCallback != null)
-                    onDeleteCallback.accept(message);
+            JMenuItem delete = new JMenuItem("🗑 Delete");
+            delete.addActionListener(e -> {
+                if (onDeleteCallback != null) onDeleteCallback.accept(message);
             });
-
-            menu.add(editItem);
-            menu.add(deleteItem);
+            menu.addSeparator();
+            menu.add(edit);
+            menu.add(delete);
         }
 
-        return menu;
+        target.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                if (e.isPopupTrigger()) menu.show(target, e.getX(), e.getY());
+            }
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent e) {
+                if (e.isPopupTrigger()) menu.show(target, e.getX(), e.getY());
+            }
+        });
+    }
+
+    private String formatTime(String timeIso) {
+        if (timeIso == null || timeIso.length() < 16) return "10:00 AM";
+        try {
+            int hour = Integer.parseInt(timeIso.substring(11, 13));
+            int minute = Integer.parseInt(timeIso.substring(14, 16));
+            String ampm = hour >= 12 ? "PM" : "AM";
+            int h12 = hour % 12;
+            if (h12 == 0) h12 = 12;
+            return String.format("%d:%02d %s", h12, minute, ampm);
+        } catch (Exception e) {
+            return "10:00 AM";
+        }
     }
 }

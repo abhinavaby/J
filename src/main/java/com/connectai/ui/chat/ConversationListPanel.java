@@ -4,255 +4,366 @@ import com.connectai.config.ThemeColors;
 import com.connectai.config.ThemeFonts;
 import com.connectai.model.Conversation;
 import com.connectai.model.ConversationMember;
-import com.connectai.model.Profile;
+import com.connectai.model.ConversationType;
 import com.connectai.service.AuthService;
 import com.connectai.service.ChatService;
 import com.connectai.ui.components.AvatarComponent;
 import com.connectai.ui.components.IconButton;
-import com.connectai.ui.components.PremiumButton;
 import com.connectai.ui.components.RoundedPanel;
 import com.connectai.ui.components.RoundedTextField;
+import com.connectai.ui.components.ToastManager;
 import com.connectai.ui.group.CreateGroupDialog;
 import com.connectai.ui.group.JoinGroupDialog;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Frame;
-
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
-
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JLabel;
-import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 
+/**
+ * Clean, simple, and clutter-free conversation sidebar.
+ */
 public class ConversationListPanel extends JPanel {
-    private DefaultListModel<Conversation> listModel;
-    private JList<Conversation> conversationJList;
-    private RoundedTextField searchField;
-    private List<Conversation> allConversations = new ArrayList<>();
     private Consumer<Conversation> onConversationSelected;
+    private List<Conversation> allConversations = new ArrayList<>();
+    private List<Conversation> filteredConversations = new ArrayList<>();
+    private String selectedConvId = "conv-ai-bot";
+    private String currentFilter = "ALL"; // ALL, DIRECT, GROUP
+    private String searchQuery = "";
+
+    private JPanel listContainer;
+    private RoundedTextField searchField;
+    private JLabel tabAll;
+    private JLabel tabDirect;
+    private JLabel tabGroup;
 
     public ConversationListPanel(Consumer<Conversation> onConversationSelected) {
         this.onConversationSelected = onConversationSelected;
         setLayout(new BorderLayout());
         setBackground(ThemeColors.SIDEBAR_BG);
-        setPreferredSize(new Dimension(340, 850));
+        setPreferredSize(new Dimension(280, 800));
+        setMinimumSize(new Dimension(260, 600));
+        setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, ThemeColors.DIVIDER));
 
-        add(createHeaderPanel(), BorderLayout.NORTH);
-        add(createListScroll(), BorderLayout.CENTER);
-        add(createFooterPanel(), BorderLayout.SOUTH);
+        // 1. Top Header & Search Bar
+        add(createTopSection(), BorderLayout.NORTH);
+
+        // 2. Conversation Items Scroll View
+        listContainer = new JPanel();
+        listContainer.setLayout(new BoxLayout(listContainer, BoxLayout.Y_AXIS));
+        listContainer.setOpaque(false);
+        listContainer.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
+
+        JScrollPane scroll = new JScrollPane(listContainer);
+        scroll.setBorder(null);
+        scroll.setOpaque(false);
+        scroll.getViewport().setOpaque(false);
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.getVerticalScrollBar().setUnitIncrement(14);
+
+        add(scroll, BorderLayout.CENTER);
+
+        // 3. User Profile Footer
+        add(createUserFooter(), BorderLayout.SOUTH);
 
         refreshConversations();
     }
 
-    private JPanel createHeaderPanel() {
-        JPanel header = new JPanel();
-        header.setLayout(new javax.swing.BoxLayout(header, javax.swing.BoxLayout.Y_AXIS));
-        header.setOpaque(false);
-        header.setBorder(BorderFactory.createEmptyBorder(16, 16, 12, 16));
+    private JPanel createTopSection() {
+        JPanel top = new JPanel();
+        top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
+        top.setOpaque(false);
+        top.setBorder(BorderFactory.createEmptyBorder(14, 16, 8, 16));
 
-        // User profile header
-        Profile p = AuthService.getInstance().getCurrentProfile();
-        String name = p != null ? p.getEffectiveName() : "User";
+        // Row 1: Logo & New Chat Action Button
+        JPanel headerRow = new JPanel(new BorderLayout());
+        headerRow.setOpaque(false);
 
-        JPanel userRow = new JPanel(new BorderLayout(12, 0));
-        userRow.setOpaque(false);
+        JPanel logoBox = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        logoBox.setOpaque(false);
 
-        AvatarComponent avatar = new AvatarComponent(40, name, true);
-        avatar.setOnline(true);
+        JLabel logoIcon = new JLabel("⚡");
+        logoIcon.setFont(new Font("Segoe UI Emoji", Font.BOLD, 18));
+        logoIcon.setForeground(ThemeColors.PRIMARY_ACCENT);
 
-        JLabel nameLabel = new JLabel(name);
-        nameLabel.setFont(ThemeFonts.TITLE_SMALL);
-        nameLabel.setForeground(ThemeColors.PRIMARY_TEXT);
+        JLabel logoText = new JLabel("ConnectAI");
+        logoText.setFont(new Font("SansSerif", Font.BOLD, 18));
+        logoText.setForeground(ThemeColors.PRIMARY_TEXT);
 
-        JLabel statusLabel = new JLabel("Online");
-        statusLabel.setFont(ThemeFonts.CAPTION);
-        statusLabel.setForeground(ThemeColors.SUCCESS_ONLINE);
+        logoBox.add(logoIcon);
+        logoBox.add(logoText);
 
-        JPanel textPanel = new JPanel();
-        textPanel.setLayout(new javax.swing.BoxLayout(textPanel, javax.swing.BoxLayout.Y_AXIS));
-        textPanel.setOpaque(false);
-        textPanel.add(nameLabel);
-        textPanel.add(statusLabel);
-
-        JPanel actionPanel = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 4, 0));
-        actionPanel.setOpaque(false);
-
-        IconButton settingsBtn = new IconButton("⚙", "Settings");
-        settingsBtn.addActionListener(e -> {
-            Frame top = (Frame) SwingUtilities.getWindowAncestor(this);
-            new com.connectai.ui.components.SettingsDialog(top).setVisible(true);
+        IconButton newChatBtn = new IconButton("+", "Create New Group or Chat");
+        newChatBtn.setFont(new Font("SansSerif", Font.BOLD, 19));
+        newChatBtn.setForeground(ThemeColors.PRIMARY_ACCENT);
+        newChatBtn.setPreferredSize(new Dimension(30, 30));
+        newChatBtn.addActionListener(e -> {
+            Frame frame = (Frame) SwingUtilities.getWindowAncestor(this);
+            new CreateGroupDialog(frame, this::refreshConversations).setVisible(true);
         });
 
-        IconButton logoutBtn = new IconButton("🚪", "Log Out");
-        logoutBtn.addActionListener(e -> performLogout());
+        headerRow.add(logoBox, BorderLayout.WEST);
+        headerRow.add(newChatBtn, BorderLayout.EAST);
 
-        actionPanel.add(settingsBtn);
-        actionPanel.add(logoutBtn);
-
-        userRow.add(avatar, BorderLayout.WEST);
-        userRow.add(textPanel, BorderLayout.CENTER);
-        userRow.add(actionPanel, BorderLayout.EAST);
-
-        // Search bar
+        // Row 2: Search Input
         searchField = new RoundedTextField("Search conversations...");
-        searchField.addKeyListener(new java.awt.event.KeyAdapter() {
+        searchField.setPreferredSize(new Dimension(248, 34));
+        searchField.setMaximumSize(new Dimension(280, 34));
+        searchField.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyReleased(java.awt.event.KeyEvent e) {
-                filterList(searchField.getText().trim());
+            public void keyReleased(KeyEvent e) {
+                searchQuery = searchField.getText().trim().toLowerCase();
+                applyFilter();
             }
         });
 
-        header.add(userRow);
-        header.add(javax.swing.Box.createVerticalStrut(14));
-        header.add(searchField);
+        // Row 3: Filter Tabs (All / Direct / Groups)
+        JPanel tabsRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        tabsRow.setOpaque(false);
+        tabsRow.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
 
-        return header;
+        tabAll = createTabPill("All", "ALL");
+        tabDirect = createTabPill("Direct", "DIRECT");
+        tabGroup = createTabPill("Groups", "GROUP");
+
+        tabsRow.add(tabAll);
+        tabsRow.add(tabDirect);
+        tabsRow.add(tabGroup);
+
+        top.add(headerRow);
+        top.add(Box.createVerticalStrut(12));
+        top.add(searchField);
+        top.add(Box.createVerticalStrut(10));
+        top.add(tabsRow);
+        top.add(Box.createVerticalStrut(6));
+
+        return top;
     }
 
-    private JScrollPane createListScroll() {
-        listModel = new DefaultListModel<>();
-        conversationJList = new JList<>(listModel);
-        conversationJList.setBackground(ThemeColors.SIDEBAR_BG);
-        conversationJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        conversationJList.setCellRenderer(new ConversationRenderer());
+    private JLabel createTabPill(String label, String filterKey) {
+        JLabel pill = new JLabel(label);
+        pill.setFont(ThemeFonts.BODY_SMALL);
+        pill.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        pill.setBorder(BorderFactory.createEmptyBorder(4, 10, 4, 10));
+        pill.setOpaque(true);
 
-        conversationJList.addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
-                Conversation selected = conversationJList.getSelectedValue();
-                if (selected != null && onConversationSelected != null) {
-                    onConversationSelected.accept(selected);
+        updateTabAppearance(pill, filterKey.equals(currentFilter));
+
+        pill.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                currentFilter = filterKey;
+                updateTabAppearance(tabAll, "ALL".equals(currentFilter));
+                updateTabAppearance(tabDirect, "DIRECT".equals(currentFilter));
+                updateTabAppearance(tabGroup, "GROUP".equals(currentFilter));
+                applyFilter();
+            }
+        });
+        return pill;
+    }
+
+    private void updateTabAppearance(JLabel pill, boolean isSelected) {
+        if (isSelected) {
+            pill.setBackground(ThemeColors.PRIMARY_ACCENT_LIGHT);
+            pill.setForeground(ThemeColors.PRIMARY_ACCENT);
+        } else {
+            pill.setBackground(ThemeColors.SIDEBAR_BG);
+            pill.setForeground(ThemeColors.SECONDARY_TEXT);
+        }
+        pill.repaint();
+    }
+
+    private JPanel createUserFooter() {
+        JPanel footer = new JPanel(new BorderLayout());
+        footer.setOpaque(false);
+        footer.setPreferredSize(new Dimension(280, 58));
+        footer.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(1, 0, 0, 0, ThemeColors.DIVIDER),
+                BorderFactory.createEmptyBorder(8, 14, 8, 14)
+        ));
+
+        JPanel userBox = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        userBox.setOpaque(false);
+
+        AvatarComponent av = new AvatarComponent(36, "Alex Rivera", true);
+        av.setCustomColors(ThemeColors.AVATAR_DARK_BG, ThemeColors.AVATAR_DARK_FG);
+
+        JPanel info = new JPanel();
+        info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));
+        info.setOpaque(false);
+
+        JLabel name = new JLabel("Alex Rivera");
+        name.setFont(ThemeFonts.BODY_BOLD);
+        name.setForeground(ThemeColors.PRIMARY_TEXT);
+
+        JLabel role = new JLabel("● Online");
+        role.setFont(ThemeFonts.CAPTION);
+        role.setForeground(ThemeColors.SUCCESS_ONLINE);
+
+        info.add(name);
+        info.add(role);
+
+        userBox.add(av);
+        userBox.add(info);
+
+        IconButton settingsBtn = new IconButton("⚙", "Settings");
+        settingsBtn.setPreferredSize(new Dimension(32, 32));
+        settingsBtn.addActionListener(e -> {
+            Frame f = (Frame) SwingUtilities.getWindowAncestor(this);
+            new com.connectai.ui.components.SettingsDialog(f).setVisible(true);
+        });
+
+        footer.add(userBox, BorderLayout.WEST);
+        footer.add(settingsBtn, BorderLayout.EAST);
+        return footer;
+    }
+
+    private void applyFilter() {
+        filteredConversations.clear();
+        for (Conversation c : allConversations) {
+            // Filter by tab
+            if ("DIRECT".equals(currentFilter) && c.getType() != ConversationType.DIRECT) continue;
+            if ("GROUP".equals(currentFilter) && c.getType() != ConversationType.GROUP) continue;
+
+            // Filter by search text
+            if (!searchQuery.isEmpty()) {
+                String title = c.getDisplayTitle() != null ? c.getDisplayTitle().toLowerCase() : "";
+                String lastMsg = c.getLatestMessage() != null && c.getLatestMessage().getContent() != null
+                        ? c.getLatestMessage().getContent().toLowerCase() : "";
+                if (!title.contains(searchQuery) && !lastMsg.contains(searchQuery)) {
+                    continue;
+                }
+            }
+            filteredConversations.add(c);
+        }
+        renderConversationList();
+    }
+
+    private void renderConversationList() {
+        listContainer.removeAll();
+
+        if (filteredConversations.isEmpty()) {
+            JLabel empty = new JLabel("No conversations found");
+            empty.setFont(ThemeFonts.CAPTION);
+            empty.setForeground(ThemeColors.MUTED_TEXT);
+            empty.setBorder(BorderFactory.createEmptyBorder(20, 10, 0, 0));
+            listContainer.add(empty);
+        } else {
+            for (Conversation c : filteredConversations) {
+                listContainer.add(createConversationRow(c));
+                listContainer.add(Box.createVerticalStrut(4));
+            }
+        }
+
+        listContainer.revalidate();
+        listContainer.repaint();
+    }
+
+    private JPanel createConversationRow(Conversation c) {
+        boolean isSelected = c.getId().equals(selectedConvId);
+        JPanel row = new RoundedPanel(10, isSelected ? ThemeColors.PRIMARY_ACCENT_LIGHT : ThemeColors.SIDEBAR_BG);
+        row.setLayout(new BorderLayout(10, 0));
+        row.setPreferredSize(new Dimension(256, 52));
+        row.setMaximumSize(new Dimension(270, 52));
+        row.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
+        row.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        // Left Avatar
+        AvatarComponent av = new AvatarComponent(38, c.getDisplayTitle(), c.getType() == ConversationType.DIRECT);
+        row.add(av, BorderLayout.WEST);
+
+        // Center Title & Snippet
+        JPanel center = new JPanel();
+        center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
+        center.setOpaque(false);
+
+        JLabel title = new JLabel(c.getDisplayTitle());
+        title.setFont(isSelected ? ThemeFonts.BODY_BOLD : ThemeFonts.BODY_MEDIUM);
+        title.setForeground(isSelected ? ThemeColors.PRIMARY_ACCENT : ThemeColors.PRIMARY_TEXT);
+
+        String snippet = "Tap to chat";
+        if (c.getLatestMessage() != null && c.getLatestMessage().getContent() != null) {
+            snippet = c.getLatestMessage().getContent().replace("\n", " ");
+            if (snippet.length() > 24) {
+                snippet = snippet.substring(0, 22) + "…";
+            }
+        }
+        JLabel sub = new JLabel(snippet);
+        sub.setFont(ThemeFonts.CAPTION);
+        sub.setForeground(ThemeColors.MUTED_TEXT);
+
+        center.add(title);
+        center.add(Box.createVerticalStrut(2));
+        center.add(sub);
+        row.add(center, BorderLayout.CENTER);
+
+        // Right Unread Badge (if applicable)
+        if ("conv-tech-team".equals(c.getId())) {
+            JLabel badge = new JLabel(" 3 ");
+            badge.setFont(ThemeFonts.BADGE);
+            badge.setForeground(Color.WHITE);
+            badge.setBackground(ThemeColors.BADGE_RED);
+            badge.setOpaque(true);
+            badge.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
+
+            JPanel badgeBox = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 8));
+            badgeBox.setOpaque(false);
+            badgeBox.add(badge);
+            row.add(badgeBox, BorderLayout.EAST);
+        }
+
+        row.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                selectedConvId = c.getId();
+                renderConversationList();
+                if (onConversationSelected != null) {
+                    onConversationSelected.accept(c);
                 }
             }
         });
 
-        JScrollPane scroll = new JScrollPane(conversationJList);
-        scroll.setBorder(null);
-        scroll.setOpaque(false);
-        scroll.getViewport().setOpaque(false);
-        return scroll;
-    }
-
-    private JPanel createFooterPanel() {
-        JPanel footer = new JPanel(new java.awt.GridLayout(1, 2, 8, 0));
-        footer.setOpaque(false);
-        footer.setBorder(BorderFactory.createEmptyBorder(12, 16, 16, 16));
-
-        PremiumButton newGroupBtn = new PremiumButton("+ Group", ThemeColors.PRIMARY_ACCENT, ThemeColors.ACCENT_TEXT);
-        newGroupBtn.setFont(ThemeFonts.BODY_SMALL);
-        newGroupBtn.addActionListener(e -> {
-            Frame top = (Frame) SwingUtilities.getWindowAncestor(this);
-            new CreateGroupDialog(top, this::refreshConversations).setVisible(true);
-        });
-
-        PremiumButton joinGroupBtn = new PremiumButton("Join Code", ThemeColors.ELEVATED_SURFACE,
-                ThemeColors.PRIMARY_TEXT);
-        joinGroupBtn.setFont(ThemeFonts.BODY_SMALL);
-        joinGroupBtn.addActionListener(e -> {
-            Frame top = (Frame) SwingUtilities.getWindowAncestor(this);
-            new JoinGroupDialog(top, this::refreshConversations).setVisible(true);
-        });
-
-        footer.add(newGroupBtn);
-        footer.add(joinGroupBtn);
-        return footer;
+        return row;
     }
 
     public void refreshConversations() {
         ChatService.getInstance().loadUserConversations().thenAccept(memberships -> {
             SwingUtilities.invokeLater(() -> {
                 allConversations.clear();
-                listModel.clear();
                 for (ConversationMember cm : memberships) {
                     if (cm.getConversation() != null) {
                         allConversations.add(cm.getConversation());
-                    } else if (cm.getProfile() != null) {
-                        allConversations.add(createDummyFromMember(cm));
                     }
                 }
-                // Fallback demo row if empty
-                if (allConversations.isEmpty()) {
-                    Conversation c = new Conversation();
-                    c.setId("general-lounge");
-                    c.setName("General Lounge");
-                    c.setDescription("Public group chat");
-                    c.setType(com.connectai.model.ConversationType.GROUP);
-                    allConversations.add(c);
+                applyFilter();
+                // Select active conversation
+                for (Conversation c : allConversations) {
+                    if (c.getId().equals(selectedConvId)) {
+                        if (onConversationSelected != null) onConversationSelected.accept(c);
+                        return;
+                    }
                 }
-                filterList(searchField != null ? searchField.getText().trim() : "");
+                if (!allConversations.isEmpty() && onConversationSelected != null) {
+                    selectedConvId = allConversations.get(0).getId();
+                    onConversationSelected.accept(allConversations.get(0));
+                }
             });
         });
-    }
-
-    private void performLogout() {
-        com.connectai.realtime.SupabaseRealtimeClient.getInstance().disconnect();
-        AuthService.getInstance().logout();
-        Frame top = (Frame) SwingUtilities.getWindowAncestor(this);
-        if (top != null) {
-            top.dispose();
-        }
-        SwingUtilities.invokeLater(() -> new com.connectai.ui.auth.AuthFrame().setVisible(true));
-    }
-
-    private Conversation createDummyFromMember(ConversationMember cm) {
-        Conversation c = new Conversation();
-        c.setId(cm.getConversationId());
-        c.setName(cm.getProfile().getEffectiveName());
-        c.setDirectPartnerProfile(cm.getProfile());
-        c.setType(com.connectai.model.ConversationType.DIRECT);
-        return c;
-    }
-
-    private void filterList(String query) {
-        listModel.clear();
-        for (Conversation c : allConversations) {
-            if (query.isEmpty() || c.getDisplayTitle().toLowerCase().contains(query.toLowerCase())) {
-                listModel.addElement(c);
-            }
-        }
-    }
-
-    private static class ConversationRenderer extends DefaultListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
-                boolean cellHasFocus) {
-            Conversation c = (Conversation) value;
-            JPanel panel = new RoundedPanel(8, isSelected ? ThemeColors.SELECTION_OVERLAY : ThemeColors.SIDEBAR_BG);
-            panel.setLayout(new BorderLayout(12, 0));
-            panel.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
-
-            AvatarComponent avatar = new AvatarComponent(42, c.getDisplayTitle(), true);
-
-            JLabel name = new JLabel(c.getDisplayTitle());
-            name.setFont(ThemeFonts.BODY_BOLD);
-            name.setForeground(ThemeColors.PRIMARY_TEXT);
-
-            JLabel sub = new JLabel(
-                    c.getLatestMessage() != null ? c.getLatestMessage().getContent() : "Tap to open chat");
-            sub.setFont(ThemeFonts.BODY_SMALL);
-            sub.setForeground(ThemeColors.MUTED_TEXT);
-
-            JPanel text = new JPanel();
-            text.setLayout(new javax.swing.BoxLayout(text, javax.swing.BoxLayout.Y_AXIS));
-            text.setOpaque(false);
-            text.add(name);
-            text.add(sub);
-
-            panel.add(avatar, BorderLayout.WEST);
-            panel.add(text, BorderLayout.CENTER);
-
-            return panel;
-        }
     }
 }

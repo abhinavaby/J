@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# J
-=======
 # ConnectAI — AI-Powered Realtime Java Desktop Chat Application
 
 [![Java 21](https://img.shields.io/badge/Java-21-orange.svg)](https://jdk.java.net/21/)
@@ -228,19 +225,24 @@ export SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
 
 ### Step 4: Build and Run
 
+#### Quick Run:
+```bash
+./run.sh
+```
+
+#### Or Run with Java:
+```bash
+java -jar target/connectai-1.0.0.jar
+```
+
 #### Compile and run tests:
 ```bash
-/Users/abhinavaby/.m2/wrapper/dists/apache-maven-3.9.16/56ba1f9f/bin/mvn clean test
+./mvnw clean test
 ```
 
 #### Build executable fat JAR:
 ```bash
-/Users/abhinavaby/.m2/wrapper/dists/apache-maven-3.9.16/56ba1f9f/bin/mvn clean package
-```
-
-#### Execute the fat JAR:
-```bash
-java -jar target/connectai-1.0.0.jar
+./mvnw clean package
 ```
 
 ---
@@ -296,4 +298,3 @@ Access the application UI in your browser at `http://localhost:6080/vnc.html`.
 | **Microphone error on record** | OS microphone permission blocked | Grant microphone permissions to Java process in OS Security settings. |
 | **Edge Function 401 Unauthorized** | Invalid Supabase JWT or missing header | Check that user is signed in before calling AI features. |
 | **WebSocket disconnects** | Intermittent network or idle timeout | `SupabaseRealtimeClient` will automatically reconnect using exponential backoff. |
->>>>>>> b5fc069 (Setup mock data provider for offline UI layout exploration)

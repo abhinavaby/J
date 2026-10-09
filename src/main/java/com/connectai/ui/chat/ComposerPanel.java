@@ -14,15 +14,22 @@ import com.connectai.ui.components.ToastManager;
 import com.connectai.ui.media.AttachmentPreviewDialog;
 import com.connectai.ui.media.VoiceRecorderPanel;
 import com.connectai.ui.poll.CreatePollDialog;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Frame;
-
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.io.File;
-
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -40,12 +47,13 @@ public class ComposerPanel extends JPanel {
     private JPanel previewHeaderPanel;
     private JPanel activeComposerCard;
     private Runnable onMessageSentCallback;
+    private static final String PLACEHOLDER = "Type a message...";
 
     public ComposerPanel(Runnable onMessageSentCallback) {
         this.onMessageSentCallback = onMessageSentCallback;
         setLayout(new BorderLayout());
         setOpaque(false);
-        setBorder(BorderFactory.createEmptyBorder(12, 16, 16, 16));
+        setBorder(BorderFactory.createEmptyBorder(10, 20, 16, 20));
 
         renderNormalComposer();
     }
@@ -62,15 +70,16 @@ public class ComposerPanel extends JPanel {
     public void setEditTargetMessage(Message editMsg) {
         this.editTargetMessage = editMsg;
         inputArea.setText(editMsg.getContent());
+        inputArea.setForeground(ThemeColors.PRIMARY_TEXT);
         renderReplyOrEditPreview("Editing message: " + editMsg.getContent());
     }
 
     private void renderNormalComposer() {
         removeAll();
 
-        activeComposerCard = new RoundedPanel(16, ThemeColors.ELEVATED_SURFACE, ThemeColors.CARD_BORDER);
+        activeComposerCard = new RoundedPanel(24, Color.WHITE, ThemeColors.CARD_BORDER);
         activeComposerCard.setLayout(new BorderLayout(8, 0));
-        activeComposerCard.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+        activeComposerCard.setBorder(BorderFactory.createEmptyBorder(6, 14, 6, 8));
 
         // Reply / Edit preview header
         previewHeaderPanel = new JPanel(new BorderLayout());
@@ -78,14 +87,32 @@ public class ComposerPanel extends JPanel {
         previewHeaderPanel.setVisible(false);
 
         inputArea = new JTextArea(1, 40);
-        inputArea.setFont(ThemeFonts.BODY_MEDIUM);
-        inputArea.setForeground(ThemeColors.PRIMARY_TEXT);
+        inputArea.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        inputArea.setText(PLACEHOLDER);
+        inputArea.setForeground(ThemeColors.MUTED_TEXT);
         inputArea.setCaretColor(ThemeColors.PRIMARY_ACCENT);
-        inputArea.setBackground(ThemeColors.ELEVATED_SURFACE);
         inputArea.setLineWrap(true);
         inputArea.setWrapStyleWord(true);
         inputArea.setOpaque(false);
-        inputArea.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
+        inputArea.setBorder(BorderFactory.createEmptyBorder(8, 6, 8, 6));
+
+        inputArea.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (PLACEHOLDER.equals(inputArea.getText())) {
+                    inputArea.setText("");
+                    inputArea.setForeground(ThemeColors.PRIMARY_TEXT);
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (inputArea.getText().trim().isEmpty()) {
+                    inputArea.setText(PLACEHOLDER);
+                    inputArea.setForeground(ThemeColors.MUTED_TEXT);
+                }
+            }
+        });
 
         inputArea.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
@@ -105,38 +132,60 @@ public class ComposerPanel extends JPanel {
         scroll.setBorder(null);
         scroll.setOpaque(false);
         scroll.getViewport().setOpaque(false);
-        scroll.setPreferredSize(new Dimension(500, 40));
+        scroll.setPreferredSize(new Dimension(500, 36));
 
-        // Left attachment tools
-        JPanel leftTools = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 4, 0));
+        // Left tool: 📎 Paperclip
+        JPanel leftTools = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
         leftTools.setOpaque(false);
 
         IconButton attachBtn = new IconButton("📎", "Attach File");
+        attachBtn.setIconColor(ThemeColors.SECONDARY_TEXT);
         attachBtn.addActionListener(e -> selectAndAttachFile());
 
-        IconButton pollBtn = new IconButton("📊", "Create Poll");
-        pollBtn.addActionListener(e -> openPollDialog());
-
         leftTools.add(attachBtn);
-        leftTools.add(pollBtn);
 
-        // Right tools
-        JPanel rightTools = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 4, 0));
+        // Right tools: ✨ AI Rephrase, 🎙 Microphone, ✈ Send Button
+        JPanel rightTools = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 2));
         rightTools.setOpaque(false);
 
         IconButton aiBtn = new IconButton("✨", "AI Rephrase");
+        aiBtn.setIconColor(ThemeColors.PRIMARY_ACCENT);
         aiBtn.addActionListener(e -> openAIRephrasePopup(aiBtn));
 
         IconButton micBtn = new IconButton("🎙", "Record Voice Note");
+        micBtn.setIconColor(ThemeColors.SECONDARY_TEXT);
         micBtn.addActionListener(e -> startVoiceRecorder());
-
-        PremiumButton sendBtn = new PremiumButton("Send", ThemeColors.PRIMARY_ACCENT, ThemeColors.ACCENT_TEXT);
-        sendBtn.setPreferredSize(new Dimension(68, 36));
-        sendBtn.addActionListener(e -> sendCurrentText());
 
         rightTools.add(aiBtn);
         rightTools.add(micBtn);
-        rightTools.add(sendBtn);
+
+        // Solid vibrant blue circular send button with white paper airplane
+        JButton circularSendBtn = new JButton() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                int size = Math.min(getWidth(), getHeight()) - 4;
+                g2.setColor(ThemeColors.PRIMARY_ACCENT);
+                g2.fillOval(2, 2, size, size);
+
+                // White paper plane / arrow
+                g2.setColor(Color.WHITE);
+                g2.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 15));
+                g2.drawString("✈", 10, 24);
+                g2.dispose();
+            }
+        };
+        circularSendBtn.setPreferredSize(new Dimension(38, 38));
+        circularSendBtn.setFocusPainted(false);
+        circularSendBtn.setBorderPainted(false);
+        circularSendBtn.setContentAreaFilled(false);
+        circularSendBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        circularSendBtn.setToolTipText("Send Message");
+        circularSendBtn.addActionListener(e -> sendCurrentText());
+
+        rightTools.add(micBtn);
+        rightTools.add(circularSendBtn);
 
         JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.setOpaque(false);
@@ -158,7 +207,7 @@ public class ComposerPanel extends JPanel {
 
         JLabel label = new JLabel(text);
         label.setFont(ThemeFonts.CAPTION);
-        label.setForeground(ThemeColors.SECONDARY_ACCENT);
+        label.setForeground(ThemeColors.PRIMARY_ACCENT);
 
         IconButton cancelBtn = new IconButton("✕", "Cancel");
         cancelBtn.setPreferredSize(new Dimension(20, 20));
@@ -175,102 +224,97 @@ public class ComposerPanel extends JPanel {
         replyToMessage = null;
         editTargetMessage = null;
         previewHeaderPanel.setVisible(false);
-        inputArea.setText("");
+        inputArea.setText(PLACEHOLDER);
+        inputArea.setForeground(ThemeColors.MUTED_TEXT);
         revalidate();
         repaint();
     }
 
     private void sendCurrentText() {
-        String text = inputArea.getText().trim();
-        if (text.isBlank() || conversationId == null)
+        String content = inputArea.getText().trim();
+        if (content.isEmpty() || PLACEHOLDER.equals(content) || conversationId == null) {
             return;
+        }
 
         if (editTargetMessage != null) {
-            ChatService.getInstance().editMessage(editTargetMessage.getId(), text);
-            clearPreview();
-            if (onMessageSentCallback != null)
-                onMessageSentCallback.run();
+            ChatService.getInstance().editMessage(editTargetMessage.getId(), content).thenRun(() -> {
+                SwingUtilities.invokeLater(() -> {
+                    clearPreview();
+                    if (onMessageSentCallback != null) onMessageSentCallback.run();
+                });
+            });
             return;
         }
 
         String replyId = replyToMessage != null ? replyToMessage.getId() : null;
-        inputArea.setText("");
-        clearPreview();
-
-        new SwingWorker<Void, Void>() {
-            @Override
-            protected Void doInBackground() throws Exception {
-                ChatService.getInstance().sendTextMessage(conversationId, text, replyId).get();
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                if (onMessageSentCallback != null)
-                    onMessageSentCallback.run();
-            }
-        }.execute();
-    }
-
-    private void selectAndAttachFile() {
-        if (conversationId == null)
-            return;
-        JFileChooser chooser = new JFileChooser();
-        int res = chooser.showOpenDialog(this);
-        if (res == JFileChooser.APPROVE_OPTION) {
-            File selectedFile = chooser.getSelectedFile();
-            Frame top = (Frame) SwingUtilities.getWindowAncestor(this);
-            new AttachmentPreviewDialog(top, selectedFile, (file, caption) -> {
-                ToastManager.showToast(this, "Uploading file...", ToastManager.ToastType.INFO);
-                AttachmentService.getInstance().uploadAndSendFile(conversationId, file, caption, null, 0)
-                        .thenAccept(msg -> {
-                            if (onMessageSentCallback != null)
-                                onMessageSentCallback.run();
-                        });
-            }).setVisible(true);
-        }
-    }
-
-    private void openPollDialog() {
-        if (conversationId == null)
-            return;
-        Frame top = (Frame) SwingUtilities.getWindowAncestor(this);
-        new CreatePollDialog(top, conversationId, onMessageSentCallback).setVisible(true);
+        ChatService.getInstance().sendTextMessage(conversationId, content, replyId).thenRun(() -> {
+            SwingUtilities.invokeLater(() -> {
+                inputArea.setText("");
+                clearPreview();
+                if (onMessageSentCallback != null) onMessageSentCallback.run();
+            });
+        });
     }
 
     private void startVoiceRecorder() {
-        if (conversationId == null)
-            return;
         removeAll();
-
-        VoiceRecorderPanel voicePanel = new VoiceRecorderPanel(
-                this::renderNormalComposer,
-                (bytes, duration) -> {
-                    ToastManager.showToast(this, "Sending voice note...", ToastManager.ToastType.INFO);
-                    AudioService.getInstance().sendVoiceNote(conversationId, bytes, duration)
-                            .thenAccept(msg -> {
-                                renderNormalComposer();
-                                if (onMessageSentCallback != null)
-                                    onMessageSentCallback.run();
+        VoiceRecorderPanel recorder = new VoiceRecorderPanel(
+                () -> renderNormalComposer(),
+                (audioBytes, durationSeconds) -> {
+                    if (audioBytes != null && audioBytes.length > 0 && conversationId != null) {
+                        try {
+                            File tempAudio = File.createTempFile("voice_", ".wav");
+                            java.nio.file.Files.write(tempAudio.toPath(), audioBytes);
+                            AttachmentService.getInstance().uploadAndSendFile(
+                                    conversationId, tempAudio, "Voice Note (" + durationSeconds + "s)",
+                                    com.connectai.model.MessageType.VOICE, durationSeconds
+                            ).thenRun(() -> {
+                                SwingUtilities.invokeLater(() -> {
+                                    renderNormalComposer();
+                                    if (onMessageSentCallback != null) onMessageSentCallback.run();
+                                });
                             });
-                });
-
-        add(voicePanel, BorderLayout.CENTER);
+                        } catch (Exception e) {
+                            renderNormalComposer();
+                        }
+                    } else {
+                        renderNormalComposer();
+                    }
+                }
+        );
+        add(recorder, BorderLayout.CENTER);
         revalidate();
         repaint();
     }
 
-    private void openAIRephrasePopup(IconButton triggerBtn) {
-        String draft = inputArea.getText().trim();
-        if (draft.isBlank()) {
-            ToastManager.showToast(this, "Type a draft message first to rephrase with AI",
-                    ToastManager.ToastType.WARNING);
+    private void selectAndAttachFile() {
+        if (conversationId == null) return;
+        JFileChooser chooser = new JFileChooser();
+        int res = chooser.showOpenDialog(this);
+        if (res == JFileChooser.APPROVE_OPTION) {
+            File selected = chooser.getSelectedFile();
+            Frame top = (Frame) SwingUtilities.getWindowAncestor(this);
+            new AttachmentPreviewDialog(top, selected, (f, caption) -> {
+                AttachmentService.getInstance().uploadAndSendFile(conversationId, f, caption, null, 0).thenRun(() -> {
+                    SwingUtilities.invokeLater(() -> {
+                        if (onMessageSentCallback != null) onMessageSentCallback.run();
+                    });
+                });
+            }).setVisible(true);
+        }
+    }
+
+    private void openAIRephrasePopup(IconButton anchor) {
+        String text = inputArea.getText().trim();
+        if (text.isEmpty() || PLACEHOLDER.equals(text)) {
+            ToastManager.showToast(this, "Type a message first to rephrase it with AI", ToastManager.ToastType.WARNING);
             return;
         }
 
-        AIRephrasePopup popup = new AIRephrasePopup(draft, rephrased -> {
-            inputArea.setText(rephrased);
+        AIRephrasePopup popup = new AIRephrasePopup(text, selectedRephrase -> {
+            inputArea.setText(selectedRephrase);
+            inputArea.setForeground(ThemeColors.PRIMARY_TEXT);
         });
-        popup.show(triggerBtn, 0, -120);
+        popup.show(anchor, 0, -260);
     }
 }

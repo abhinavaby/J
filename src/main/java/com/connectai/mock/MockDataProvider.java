@@ -61,6 +61,8 @@ public class MockDataProvider {
         initSarahDirectChat();
         initDavidDirectChat();
         initDesignGuildGroupChat();
+        initMarketingTeamGroupChat();
+        initProjectRdGroupChat();
     }
 
     public static MockDataProvider getInstance() {
@@ -392,13 +394,25 @@ public class MockDataProvider {
         c.setType(ConversationType.DIRECT);
         c.setDirectPartnerProfile(bot);
         c.setCreatedAt(Instant.now().toString());
+        c.setInviteCode("CONNECT2026");
+        c.setDescription("Your AI-powered chat companion");
+
+        List<ConversationMember> members = new ArrayList<>();
+        members.add(new ConversationMember(id, currentUser.getId(), Role.OWNER, currentProfile));
+        members.add(new ConversationMember(id, bot.getId(), Role.MEMBER, bot));
+        members.add(new ConversationMember(id, profiles.get("user-sarah-456").getId(), Role.MEMBER, profiles.get("user-sarah-456")));
+        members.add(new ConversationMember(id, profiles.get("user-david-789").getId(), Role.MEMBER, profiles.get("user-david-789")));
+        members.add(new ConversationMember(id, profiles.get("user-elena-101").getId(), Role.MEMBER, profiles.get("user-elena-101")));
+        members.add(new ConversationMember(id, profiles.get("user-marcus-202").getId(), Role.MEMBER, profiles.get("user-marcus-202")));
+        c.setMembers(members);
+
         conversations.put(id, c);
 
         List<Message> list = new ArrayList<>();
 
-        Message m1 = createMsg(id, bot, "Hello Alex! 👋 Welcome to **ConnectAI** desktop messenger. I am your built-in AI Assistant companion.\n\nYou can chat with me, test sending messages, or try the **AI Rephrase** and **AI Summary** features without needing a Supabase backend connection!", "2026-09-19T10:00:00Z");
-        Message m2 = createMsg(id, currentProfile, "Thanks! How do I rephrase text or summarize discussions?", "2026-09-19T10:01:00Z");
-        Message m3 = createMsg(id, bot, "It's super easy!\n\n1. **AI Rephrase**: Click the '✨ AI Rephrase' icon in the message composer toolbar to rewrite draft messages into Professional, Casual, or Concise tone.\n2. **AI Summary**: Click '⚡ AI Summary' at the top of any chat header to generate bulleted highlights.", "2026-09-19T10:02:00Z");
+        Message m1 = createMsg(id, bot, "Hello Alex! 👋\nWelcome to ConnectAI desktop messenger.\n\nI am your built-in AI Assistant companion. You can chat with me, test sending messages, or try the **AI Rephrase** and **AI Summary** features without needing a Supabase backend connection!", "2026-10-08T10:00:00Z");
+        Message m2 = createMsg(id, currentProfile, "Thanks! How do I rephrase text or summarize discussions?", "2026-10-08T10:01:00Z");
+        Message m3 = createMsg(id, bot, "It's super easy!\n1. **AI Rephrase**: Click the ✨ AI Rephrase icon in the message composer toolbar to rewrite draft messages into Professional, Casual, or Concise tone.\n2. **AI Summary**: Click ⚡ AI Summary at the top of any chat header to generate bulleted highlights.", "2026-10-08T10:02:00Z");
 
         list.add(m3);
         list.add(m2);
@@ -413,11 +427,11 @@ public class MockDataProvider {
 
         Conversation c = new Conversation();
         c.setId(id);
-        c.setName("Tech & AI Product Team ⚡");
+        c.setName("Tech & AI Product Team");
         c.setDescription("Core architecture, Java Swing UI components & Supabase Edge Functions");
         c.setType(ConversationType.GROUP);
         c.setPrivate(false);
-        c.setInviteCode("AI-TECH26");
+        c.setInviteCode("CONNECT2026");
         c.setPinned(true);
         c.setCreatedAt(Instant.now().toString());
 
@@ -619,6 +633,44 @@ public class MockDataProvider {
 
         messagesByConversation.put(id, list);
         c.setLatestMessage(m2);
+    }
+
+    private void initMarketingTeamGroupChat() {
+        String id = "conv-marketing-team";
+        Conversation c = new Conversation();
+        c.setId(id);
+        c.setName("Marketing Team");
+        c.setDescription("Product launches, content campaigns & messaging");
+        c.setType(ConversationType.GROUP);
+        c.setInviteCode("MKTG2026");
+        c.setCreatedAt(Instant.now().toString());
+        conversations.put(id, c);
+
+        List<Message> list = new ArrayList<>();
+        Profile bot = profiles.get("bot-connectai");
+        Message m1 = createMsg(id, bot, "Marketing campaign metrics prepared for Q4 sprint.", "2026-10-08T09:00:00Z");
+        list.add(m1);
+        messagesByConversation.put(id, list);
+        c.setLatestMessage(m1);
+    }
+
+    private void initProjectRdGroupChat() {
+        String id = "conv-project-rd";
+        Conversation c = new Conversation();
+        c.setId(id);
+        c.setName("Project R&D");
+        c.setDescription("Research, AI models experimentation & benchmarks");
+        c.setType(ConversationType.GROUP);
+        c.setInviteCode("RD2026");
+        c.setCreatedAt(Instant.now().toString());
+        conversations.put(id, c);
+
+        List<Message> list = new ArrayList<>();
+        Profile bot = profiles.get("bot-connectai");
+        Message m1 = createMsg(id, bot, "Benchmark results on low-latency token streaming are ready.", "2026-10-08T09:30:00Z");
+        list.add(m1);
+        messagesByConversation.put(id, list);
+        c.setLatestMessage(m1);
     }
 
     private Message createMsg(String convId, Profile sender, String content, String timeIso) {

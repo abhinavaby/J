@@ -10,6 +10,7 @@ import com.connectai.ui.components.RoundedPanel;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -40,20 +41,24 @@ public class PollCardComponent extends JPanel {
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setBorder(BorderFactory.createEmptyBorder(14, 16, 14, 16));
 
+        card.setAlignmentX(Component.LEFT_ALIGNMENT);
+
         // Header
         JLabel questionLabel = new JLabel("📊 " + poll.getQuestion());
         questionLabel.setFont(ThemeFonts.BODY_BOLD);
         questionLabel.setForeground(ThemeColors.PRIMARY_TEXT);
+        questionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         String subText = (poll.isAllowsMultipleAnswers() ? "Multiple choice" : "Single choice") +
                 (poll.isAnonymous() ? " • Anonymous" : "");
         JLabel typeLabel = new JLabel(subText);
         typeLabel.setFont(ThemeFonts.CAPTION);
         typeLabel.setForeground(ThemeColors.MUTED_TEXT);
+        typeLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         card.add(questionLabel);
         card.add(typeLabel);
-        card.add(javax.swing.Box.createVerticalStrut(12));
+        card.add(javax.swing.Box.createVerticalStrut(10));
 
         // Options
         if (poll.getOptions() != null) {
@@ -90,7 +95,7 @@ public class PollCardComponent extends JPanel {
                 // Progress percentage fill background
                 if (option.getPercentage() > 0) {
                     int fillWidth = (int) ((getWidth() * option.getPercentage()) / 100.0);
-                    g2.setColor(selected ? new Color(187, 239, 31, 60) : new Color(255, 255, 255, 15));
+                    g2.setColor(selected ? new Color(37, 99, 235, 35) : new Color(226, 232, 240, 180));
                     g2.fillRoundRect(0, 0, fillWidth, getHeight(), 8, 8);
                 }
 

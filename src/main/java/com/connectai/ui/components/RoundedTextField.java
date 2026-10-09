@@ -5,6 +5,7 @@ import com.connectai.config.ThemeDimensions;
 import com.connectai.config.ThemeFonts;
 import com.connectai.config.ThemeSpacing;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -27,6 +28,8 @@ public class RoundedTextField extends JTextField implements FocusListener {
         setCaretColor(ThemeColors.PRIMARY_ACCENT);
         setBackground(bg);
         setOpaque(false);
+        setPreferredSize(new Dimension(340, 42));
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
         setBorder(BorderFactory.createEmptyBorder(ThemeSpacing.S, ThemeSpacing.M, ThemeSpacing.S, ThemeSpacing.M));
         addFocusListener(this);
     }

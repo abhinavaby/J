@@ -6,6 +6,7 @@ import com.connectai.config.ThemeFonts;
 import com.connectai.config.ThemeSpacing;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -26,6 +27,8 @@ public class PasswordFieldWithToggle extends JPanel implements FocusListener {
         this.placeholder = placeholder;
         setLayout(new BorderLayout());
         setOpaque(false);
+        setPreferredSize(new Dimension(340, 42));
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
 
         passwordField = new JPasswordField() {
             @Override
